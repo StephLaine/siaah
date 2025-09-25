@@ -1,0 +1,262 @@
+/* Nouvelle Demande Styles */
+.nouvelle-demande {
+  background-color: #f8fafc;
+  height: 100%;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* Header Section */
+.demande-header {
+  margin-bottom: 2rem;
+}
+
+.demande-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.demande-tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1e40af;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  max-width: 300px;
+}
+
+.tab-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+.tab-text {
+  font-weight: 500;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.tab-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Services Container */
+.services-container {
+  display: flex;
+  justify-content: center;
+}
+
+.services-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Services Header */
+.services-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.services-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.services-icons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.gear-icon {
+  font-size: 1.2rem;
+  opacity: 0.6;
+}
+
+/* Services Message */
+.services-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  color: #64748b;
+}
+
+.services-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.exclamation {
+  background-color: #fbbf24;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Services List */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.service-card:hover {
+  border-color: #3b82f6;
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.service-icon {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+}
+
+.service-content {
+  flex: 1;
+}
+
+.service-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+}
+
+.service-code {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Step Indicators */
+.step-indicators {
+  margin-bottom: 2rem;
+}
+
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  transition: background-color 0.2s;
+}
+
+.step-dot.active {
+  background-color: #3b82f6;
+}
+
+.step-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.step-labels span {
+  flex: 1;
+  text-align: center;
+}
+
+/* Services Footer */
+.services-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.next-button {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.next-button:hover {
+  background-color: #059669;
+}
+
+.next-button:active {
+  transform: translateY(1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nouvelle-demande {
+    padding: 1rem;
+  }
+  
+  .services-card {
+    padding: 1.5rem;
+  }
+  
+  .service-card {
+    padding: 0.75rem;
+  }
+  
+  .service-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+}
