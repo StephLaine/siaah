@@ -1,0 +1,40 @@
+.App {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.app-body {
+  display: flex;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+/* Nouvelle Demande specific styles */
+.nouvelle-demande {
+  flex: 1;
+  margin-left: 0;
+}
+
+/* Statut des Demandes specific styles */
+.statut-demandes {
+  flex: 1;
+  margin-left: 0;
+}
+
+/* Paiements specific styles */
+.paiements {
+  flex: 1;
+  margin-left: 0;
+}
+
+/* Sidebar Content specific styles */
+.sidebar-content {
+  flex: 1;
+  margin-left: 0;
+}

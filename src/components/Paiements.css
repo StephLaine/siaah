@@ -1,0 +1,295 @@
+/* Paiements Styles */
+.paiements {
+  background-color: #f8fafc;
+  height: 100%;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* Header Section */
+.paiements-header {
+  margin-bottom: 2rem;
+}
+
+.paiements-title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1e40af;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.paiements-title-section h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.paiements-tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  max-width: 200px;
+}
+
+.tab-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+.tab-text {
+  font-weight: 500;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.tab-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Main Container */
+.paiements-container {
+  display: flex;
+  justify-content: center;
+}
+
+.paiements-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 800px;
+  width: 100%;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin: 0;
+}
+
+.card-icons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.gear-icon,
+.info-icon {
+  font-size: 1.2rem;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.gear-icon:hover,
+.info-icon:hover {
+  opacity: 1;
+}
+
+/* Card Message */
+.card-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  color: #64748b;
+}
+
+.card-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.exclamation {
+  background-color: #fbbf24;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Services Grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #f8fafc;
+}
+
+.service-card:hover {
+  border-color: #3b82f6;
+  background-color: #f1f5f9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.service-card.selected {
+  border-color: #3b82f6;
+  background-color: #dbeafe;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.service-icon {
+  font-size: 2.5rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.service-content {
+  flex: 1;
+}
+
+.service-content h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.service-count {
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 500;
+  background-color: #e2e8f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* Payment Footer */
+.payment-footer {
+  border-top: 2px solid #e5e7eb;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+}
+
+.payment-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.payment-icon,
+.money-icon {
+  font-size: 1.5rem;
+}
+
+.payment-text {
+  text-align: center;
+  flex: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .paiements {
+    padding: 1rem;
+  }
+  
+  .paiements-card {
+    padding: 1.5rem;
+  }
+  
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .service-card {
+    padding: 1rem;
+  }
+  
+  .service-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+  
+  .payment-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .payment-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .paiements-title-section {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .paiements-tab {
+    max-width: none;
+    justify-content: center;
+  }
+  
+  .service-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .service-content h3 {
+    font-size: 1.1rem;
+  }
+}
