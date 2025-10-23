@@ -12,12 +12,12 @@ const Header = ({ onNavigate, currentPage }) => {
       {/* Top Header */}
       <header className="top-header">
         <div className="header-container">
-          <div className="logo-section">
-            <div className="logo">
-              <span className="car-icon">🚗</span>
-              <span className="logo-text">SIAAH</span>
-            </div>
-          </div>
+                 <div className="logo-section">
+                   <div className="logo">
+                     <img src="/images/Coat_of_arms_of_Haiti.svg" alt="Coat of Arms of Haiti" className="haiti-coat-of-arms" />
+                     <span className="logo-text">SIAAH</span>
+                   </div>
+                 </div>
           
           <div className="search-section">
             <div className="search-bar">

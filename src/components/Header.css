@@ -28,8 +28,10 @@
   font-weight: bold;
 }
 
-.car-icon {
-  font-size: 2rem;
+.haiti-coat-of-arms {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .logo-text {
