@@ -68,6 +68,13 @@ const Header = ({ onNavigate, currentPage }) => {
           >
             Paiements
           </a>
+          <a 
+            href="#administration" 
+            className={`nav-item ${currentPage === 'administration' ? 'active' : ''}`}
+            onClick={(e) => handleNavClick(e, 'administration')}
+          >
+            Administration
+          </a>
           <a href="#a-propos" className="nav-item">A Propos</a>
         </div>
       </nav>

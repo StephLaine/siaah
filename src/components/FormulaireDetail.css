@@ -1,0 +1,221 @@
+.formulaire-detail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.formulaire-content {
+  background-color: white;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.formulaire-header {
+  background-color: #3b82f6;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px 8px 0 0;
+}
+
+.header-info {
+  display: flex;
+  gap: 30px;
+}
+
+.dossier-number,
+.status {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Official Header */
+.official-header {
+  text-align: center;
+  padding: 30px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.coat-of-arms {
+  margin-bottom: 20px;
+}
+
+.haiti-emblem {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.motto {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.official-titles h1 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 5px 0;
+}
+
+.official-titles h2 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 5px 0;
+}
+
+.official-titles h3 {
+  font-size: 14px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 5px 0;
+}
+
+.document-title {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.document-title h2 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+/* Sections */
+.section {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.section-header {
+  background-color: #3b82f6;
+  color: white;
+  padding: 10px 15px;
+  margin: -20px -20px 20px -20px;
+  border-radius: 0;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #e0f2fe;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Special Input Groups */
+.phone-inputs,
+.date-inputs,
+.birth-place-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.phone-inputs input,
+.date-inputs input,
+.birth-place-inputs input {
+  flex: 1;
+}
+
+.date-inputs input:first-child {
+  flex: 0.5;
+}
+
+.date-inputs input:nth-child(2) {
+  flex: 0.5;
+}
+
+.date-inputs input:last-child {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .formulaire-content {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-info {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
