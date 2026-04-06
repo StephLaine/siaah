@@ -93,13 +93,27 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
 
   const getDynamicModules = () => {
     let names = [];
+    
+    if (user?.role_id === 1) {
+      // SuperAdmin see all base modules
+      return [
+        moduleMap['Immatriculation'], 
+        moduleMap['Permis de Conduire'], 
+        moduleMap['Gestion des véhicules']
+      ];
+    }
+
     if (user?.role_id === 2) {
       names = user?.entity_services || [];
+      // Admins always see Gestion des véhicules
+      if (!names.includes('Gestion des véhicules')) {
+        names.push('Gestion des véhicules');
+      }
     } else if (user?.role_id === 3) {
       names = user?.assigned_services || [];
-    } else if (user?.role_id === 1) {
-      // SuperAdmin see all
-      return [moduleMap['Immatriculation'], moduleMap['Permis de Conduire'], moduleMap['Gestion des véhicules']];
+      // Employees should NOT see Gestion des véhicules unless specifically assigned?
+      // User says "administrateur uniquement et les supermadmin"
+      names = names.filter(n => n !== 'Gestion des véhicules');
     }
     
     // Sort names to ensure the requested order: Immatriculation -> Permis -> Gestion Véhicules

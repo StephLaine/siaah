@@ -16,7 +16,7 @@ import {
   CheckCircle,
   AlertCircle,
   CreditCard,
-  Download, FileEdit, Wallet, Smartphone, Globe, Trash2 as TrashIcon, CheckCircle as CheckIcon
+  Download, FileEdit, Wallet, Smartphone, Globe, ArrowRight, Trash2 as TrashIcon, CheckCircle as CheckIcon
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -208,27 +208,43 @@ const StatutDemandes = () => {
   const handlePayRequest = async () => {
     if (!paymentRequest) return;
     setIsProcessingAction(true);
+    
+    // Map UI method names to backend expected keys
+    let methodKey = 'moncash';
+    if (paymentMethod === 'Carte Bancaire') methodKey = 'credit_card';
+    if (paymentMethod === 'Mon Cash' || paymentMethod === 'MonCash') methodKey = 'moncash';
+    
+    if (paymentMethod === 'Virement' || paymentMethod === 'NatCash') {
+      alert(`${paymentMethod} n'est pas encore disponible en ligne. Veuillez utiliser Mon Cash ou Carte Bancaire.`);
+      setIsProcessingAction(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/requests/${paymentRequest.id}/pay`, {
+      const response = await fetch('/api/payments/initiate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}` 
         },
-        body: JSON.stringify({ paymentMethod })
+        body: JSON.stringify({ 
+          requestId: paymentRequest.id, 
+          amount: paymentRequest.price || 2500, // Fallback if price missing
+          method: methodKey 
+        })
       });
-      if (response.ok) {
-        const result = await response.json();
-        // Update state with full updated record from DB (including payment_date and method)
-        setRequests(prev => prev.map(r => r.id === paymentRequest.id ? result.data : r));
-        setPaymentRequest(null);
-        setShowSuccess({ type: 'payment', message: 'Paiement effectué avec succès ! Votre dossier est maintenant en cours de traitement.' });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        // Redirection to payment provider
+        window.location.href = result.paymentUrl;
       } else {
-        const errorData = await response.json();
-        alert("Erreur lors du paiement : " + (errorData.message || "Erreur inconnue"));
+        alert("Erreur lors de l'initiation du paiement : " + (result.message || "Erreur inconnue"));
       }
     } catch (error) {
       console.error("Payment error:", error);
+      alert("Une erreur est survenue lors de la connexion au service de paiement.");
     } finally {
       setIsProcessingAction(false);
     }
@@ -775,21 +791,30 @@ const StatutDemandes = () => {
                       onClick={() => setPaymentMethod('MonCash')}
                     >
                       <Smartphone size={24} />
-                      <span>MonCash</span>
-                    </div>
-                    <div 
-                      className={`method-card ${paymentMethod === 'NatCash' ? 'active' : ''}`}
-                      onClick={() => setPaymentMethod('NatCash')}
-                    >
-                      <Wallet size={24} />
-                      <span>NatCash</span>
+                      <div className="method-info">
+                        <span className="method-name">Mon Cash</span>
+                        <span className="method-sub">Paiement mobile</span>
+                      </div>
                     </div>
                     <div 
                       className={`method-card ${paymentMethod === 'Carte Bancaire' ? 'active' : ''}`}
                       onClick={() => setPaymentMethod('Carte Bancaire')}
                     >
                       <Globe size={24} />
-                      <span>Carte Bancaire</span>
+                      <div className="method-info">
+                        <span className="method-name">Carte Bancaire</span>
+                        <span className="method-sub">Visa, Mastercard</span>
+                      </div>
+                    </div>
+                    <div 
+                      className={`method-card ${paymentMethod === 'Virement' ? 'active' : ''}`}
+                      onClick={() => setPaymentMethod('Virement')}
+                    >
+                      <Wallet size={24} />
+                      <div className="method-info">
+                        <span className="method-name">Virement</span>
+                        <span className="method-sub">Banque locale</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -813,7 +838,14 @@ const StatutDemandes = () => {
               <div className="payment-modal-footer">
                 <button className="btn-cancel-pay" onClick={() => setPaymentRequest(null)}>Annuler</button>
                 <button className="btn-confirm-pay" onClick={handlePayRequest} disabled={isProcessingAction}>
-                  {isProcessingAction ? <Loader2 className="animate-spin" size={18} /> : 'Payer maintenant'}
+                  {isProcessingAction ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      <span>Redirection...</span>
+                    </>
+                  ) : (
+                    `Confirmer le paiement de ${paymentRequest.price || '2,500'} HTG`
+                  )}
                 </button>
               </div>
             </motion.div>

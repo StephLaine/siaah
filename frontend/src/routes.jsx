@@ -40,6 +40,8 @@ import UserApplications from './pages/user/Applications';
 import UserDashboard from './pages/user/UserDashboard';
 import StatutDemandes from './pages/user/StatutDemandes';
 import Paiements from './pages/user/Paiements';
+import PaymentSuccess from './pages/user/PaymentSuccess';
+import PaymentCancelled from './pages/user/PaymentCancelled';
 
 
 // Super Admin Pages
@@ -140,6 +142,8 @@ const AppRoutes = () => {
                     <Route path="statut"            element={<StatutDemandes />} />
                     <Route path="paiements"         element={<Paiements />} />
                     
+                    <Route path="payment-success"    element={<PaymentSuccess />} />
+                    <Route path="payment-cancelled" element={<PaymentCancelled />} />
                 </Route>
 
                 {/* ══════════════════════════════════ */}

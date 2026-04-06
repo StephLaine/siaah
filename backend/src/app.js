@@ -32,6 +32,7 @@ app.use('/api/entity-admin', require('./routes/entityAdmin.routes')); // Admins 
 app.use('/api/vehicles',     require('./routes/vehicle.routes'));
 app.use('/api/licenses',     require('./routes/license.routes'));
 app.use('/api/appointments', require('./routes/appointment.routes'));
+app.use('/api/payments',     require('./routes/payment.routes'));
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
