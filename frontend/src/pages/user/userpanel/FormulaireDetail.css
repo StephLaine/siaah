@@ -1,0 +1,350 @@
+/* ═══════════════════════════════════════════
+   FORMULAIRE DETAIL — Official Form Overlay
+   ═══════════════════════════════════════════ */
+
+.fd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.fd-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 860px;
+  max-height: 94vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* ── Top bar ── */
+.fd-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #1e3a8a;
+  color: white;
+  flex-shrink: 0;
+}
+
+.fd-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fd-dossier-id {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.fd-type-badge {
+  background: rgba(255,255,255,0.15);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.fd-status-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.fd-topbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fd-print-btn,
+.fd-close-btn {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: white;
+  border-radius: 7px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.fd-print-btn:hover,
+.fd-close-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ── Official header ── */
+.fd-official-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 28px;
+  background: #f8fafc;
+  border-bottom: 2px solid #1e3a8a;
+  flex-shrink: 0;
+}
+
+.fd-emblem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fd-emblem-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.fd-emblem-text strong {
+  font-size: 13px;
+  color: #1e3a8a;
+  font-weight: 800;
+}
+
+.fd-official-title {
+  text-align: center;
+  flex: 1;
+}
+
+.fd-official-title p {
+  font-size: 12px;
+  color: #475569;
+  margin: 0 0 3px;
+}
+
+.fd-official-title strong {
+  font-size: 13px;
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.fd-doc-ref {
+  text-align: right;
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.fd-doc-ref div {
+  margin-bottom: 3px;
+}
+
+/* ── Scrollable body ── */
+.fd-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Section ── */
+.fd-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fd-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  border-left: 4px solid #1e3a8a;
+}
+
+.fd-section-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.fd-section-body {
+  padding: 16px;
+}
+
+/* ── Grid & fields ── */
+.fd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.fd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fd-field.fd-full {
+  grid-column: 1 / -1;
+}
+
+.fd-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fd-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 7px 12px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.fd-empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ── Documents list ── */
+.fd-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fd-doc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.fd-doc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fd-doc-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.fd-doc-file {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.fd-doc-joined {
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+  background: #dcfce7;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* ── Footer ── */
+.fd-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.fd-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fd-btn-validate {
+  background: #059669;
+  color: white;
+}
+
+.fd-btn-validate:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.fd-btn-reject {
+  background: #dc2626;
+  color: white;
+}
+
+.fd-btn-reject:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.fd-btn-close {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.fd-btn-close:hover {
+  background: #cbd5e1;
+}
+
+/* Print styles */
+@media print {
+  .fd-overlay {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    padding: 0;
+  }
+  .fd-modal {
+    box-shadow: none;
+    max-height: none;
+  }
+  .fd-topbar-right,
+  .fd-footer {
+    display: none;
+  }
+}

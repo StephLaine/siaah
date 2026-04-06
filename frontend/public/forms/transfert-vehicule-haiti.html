@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificat de Cession d'un Véhicule - République d'Haïti</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #C1272D;
+            /* Red of Haitian Flag */
+            --secondary: #00209F;
+            /* Blue of Haitian Flag */
+            --text: #1a1a1a;
+            --border: #ccc;
+            --bg-light: #f9f9f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #fff;
+            color: var(--text);
+            font-size: 11px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #000;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .branding {
+            text-align: left;
+            flex: 1;
+        }
+
+        .branding h1 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--secondary);
+        }
+
+        .branding h2 {
+            margin: 2px 0;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .shield {
+            width: 80px;
+            height: auto;
+            margin: 0 20px;
+        }
+
+        .form-title {
+            text-align: right;
+            flex: 1;
+        }
+
+        .form-title h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .form-title p {
+            margin: 5px 0 0;
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        .section {
+            border: 1px solid var(--text);
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .section-header {
+            background: var(--bg-light);
+            padding: 5px 10px;
+            margin: -0px -10px 10px -10px;
+            border-bottom: 1px solid var(--text);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .field-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            color: #555;
+        }
+
+        .field .input-box {
+            border-bottom: 1px dotted var(--text);
+            height: 18px;
+            background: #fff;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .box {
+            width: 12px;
+            height: 12px;
+            border: 1px solid var(--text);
+        }
+
+        .full-width {
+            grid-column: span 4;
+        }
+
+        .half-width {
+            grid-column: span 2;
+        }
+
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .signature-block {
+            border-top: 1px solid var(--text);
+            padding-top: 10px;
+            min-height: 80px;
+        }
+
+        .signature-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 8px;
+            font-style: italic;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="branding">
+                <h1>RÉPUBLIQUE D'HAÏTI</h1>
+                <h2>Ministère de l'Économie et des Finances</h2>
+                <h2>Direction Générale des Impôts (DGI)</h2>
+                <h2>Service de la Circulation</h2>
+            </div>
+            <!-- Note: In a real app, use the actual Haitian Shield image path -->
+            <div class="shield-placeholder" style="flex: 0; text-align: center;">
+                <div style="font-size: 10px; font-weight: 900;">L'UNION FAIT LA FORCE</div>
+            </div>
+            <div class="form-title">
+                <h3>CERTIFICAT DE CESSION</h3>
+                <p>(À remplir par l'ancien et le nouveau propriétaire)</p>
+                <div style="font-size: 9px; margin-top: 5px;">Formulaire SIAAH-DGI N° 2026-V1</div>
+            </div>
+        </div>
+
+        <!-- VÉHICULE SELECTION -->
+        <div class="section">
+            <div class="section-header">LE VÉHICULE (à remplir par l'ancien propriétaire)</div>
+            <div class="field-group">
+                <div class="field half-width">
+                    <label>(A) Numéro d'immatriculation / Plaque</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>(E) Numéro d'identification du véhicule (VIN/Châssis)</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field">
+                    <label>(D.1) Marque</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field">
+                    <label>(D.2) Modèle / Série</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field">
+                    <label>(J.1) Genre National</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field">
+                    <label>Couleur</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field full-width">
+                    <label>Kilométrage inscrit au compteur : .......................................... km</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANCIEN PROPRIÉTAIRE -->
+        <div class="section">
+            <div class="section-header">ANCIEN PROPRIÉTAIRE (Vendeur)</div>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <div class="box"></div> Personne physique
+                </div>
+                <div class="checkbox-item">
+                    <div class="box"></div> Entreprise / Personne morale
+                </div>
+                <div style="margin-left: 20px;">Sexe : <span class="box"
+                        style="display:inline-block; vertical-align:middle;"></span> M <span class="box"
+                        style="display:inline-block; vertical-align:middle;"></span> F</div>
+            </div>
+            <div class="field-group">
+                <div class="field full-width">
+                    <label>Nom et Prénoms (ou Raison Sociale)</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>NIF / Matricule Fiscal</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>CIN / Pièce d'Identité</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field full-width">
+                    <label>Adresse complète (N°, Rue, Ville, Departement)</label>
+                    <div class="input-box"></div>
+                </div>
+            </div>
+            <p style="font-weight: bold; margin-bottom: 5px;">Certifie (cocher la case correspondante) :</p>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <div class="box"></div> céder le véhicule
+                </div>
+                <div class="checkbox-item">
+                    <div class="box"></div> céder pour destruction
+                </div>
+            </div>
+            <p>Le [.... / .... / 202...] à [....] h [....] le véhicule désigné ci-dessus.</p>
+        </div>
+
+        <!-- NOUVEAU PROPRIÉTAIRE -->
+        <div class="section">
+            <div class="section-header">NOUVEAU PROPRIÉTAIRE (Acheteur)</div>
+            <div class="field-group">
+                <div class="field full-width">
+                    <label>Nom et Prénoms (ou Raison Sociale)</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>NIF / Matricule Fiscal</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>CIN / Pièce d'Identité</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field full-width">
+                    <label>Adresse complète</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>Téléphone</label>
+                    <div class="input-box"></div>
+                </div>
+                <div class="field half-width">
+                    <label>E-mail</label>
+                    <div class="input-box"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="signatures">
+            <div class="signature-block">
+                <div class="signature-title">Signature de l'Ancien Propriétaire</div>
+                <p style="font-size: 8px;">(Fait à ................................., le ..../..../202...)</p>
+            </div>
+            <div class="signature-block">
+                <div class="signature-title">Signature du Nouveau Propriétaire</div>
+                <p style="font-size: 8px;">(Fait à ................................., le ..../..../202...)</p>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            SIAAH - Système Intégré des Activités Administratives d'Haïti. En collaboration avec la DGI et l'OAVCT.
+            <br>Ce document est une version digitale officielle simplifiée pour faciliter vos démarches citoyennes.
+        </div>
+    </div>
+
+</body>
+
+</html>

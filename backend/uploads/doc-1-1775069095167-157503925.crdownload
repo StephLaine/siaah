@@ -1,0 +1,12 @@
+﻿Currency,Date,Source,Gross amount,Fees,Net amount,Account holder,Account type,Last 4,Auth.,Expiry,Result
+USD,3/23/2026 1:47:39 PM,Card not present,30.00,0.00,30.00,Meaghan  Balzer,MasterCard,4885,02185E,11/2029,Approved
+USD,3/27/2026 6:05:25 AM,Transaction batch,10.00,-0.60,9.40,Sara Llansa,Visa,1340,05730I,12/2023,Approved
+USD,3/27/2026 6:05:27 AM,Transaction batch,50.00,-2.05,47.95,Rachel Koteen,American Express,5005,203294,10/2030,Approved
+USD,3/28/2026 6:05:34 AM,Transaction batch,5.00,-0.45,4.55,Cherene Fillingim-Selk,Visa,7801,06003D,03/2029,Approved
+USD,3/28/2026 6:05:35 AM,Transaction batch,10.00,0.00,10.00,Stephanie Rapp,Visa,8639,031252,11/2028,Approved
+USD,3/28/2026 8:34:25 PM,Card not present,50.00,0.00,50.00,Francesca Eugene,American Express,1005,148880,10/2028,Approved
+USD,3/28/2026 9:28:56 PM,Card not present,400.00,0.00,400.00,Doranda Jean Baptiste,Discover,3751,02828R,03/2031,Approved
+USD,3/29/2026 6:04:05 AM,Transaction batch,10.67,-0.67,10.00,Jacqueline Mann,American Express,2012,222054,06/2030,Approved
+USD,3/29/2026 6:04:05 AM,Transaction batch,60.00,-2.40,57.60,Karishma Huda,American Express,6004,180177,01/2031,Approved
+USD,3/31/2026 6:04:16 AM,Transaction batch,50.00,-1.80,48.20,Amy Bracken,MasterCard,9127,75799Z,11/2024,Approved
+USD,3/31/2026 10:42:39 PM,Card not present,13.00,0.00,13.00,Christine Desauguste,Visa,9216,07169F,06/2027,Approved

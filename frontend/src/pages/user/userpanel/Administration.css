@@ -1,0 +1,21 @@
+.administration {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-body {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 68px); /* Adjusted for typical header height */
+  overflow: hidden;
+}
+
+.admin-main-content {
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 24px;
+  overflow-y: auto;
+  border-left: 1px solid #e2e8f0;
+}

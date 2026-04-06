@@ -1,0 +1,453 @@
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  overflow-y: auto;
+  width: 100%;
+}
+
+/* Organization Info Section */
+.org-info {
+  background: white;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.org-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.haiti-coat-of-arms-small {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.haiti-text {
+  font-weight: 600;
+  color: #1e3a8a;
+  font-size: 0.9rem;
+}
+
+.org-center {
+  flex: 1;
+  text-align: center;
+  margin: 0 2rem;
+}
+
+.org-name {
+  font-size: 0.9rem;
+  color: #1e3a8a;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.org-subtitle {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.org-right {
+  display: flex;
+  align-items: center;
+}
+
+.social-icons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #f3f4f6;
+  color: #1e3a8a;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.social-icon:hover {
+  background-color: #1e3a8a;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Welcome Section */
+.welcome-banner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  color: white;
+  box-shadow: 0 10px 25px rgba(30, 58, 138, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.welcome-text h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.highlight-name {
+  color: #fbbf24; /* Amber color for the name */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.welcome-text p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Cards Grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  grid-template-rows: auto auto;
+  gap: 1rem;
+  height: auto;
+}
+
+/* Accident card spans both rows */
+.accidents-card {
+  grid-row: 1 / 3;
+  grid-column: 3;
+}
+
+/* Transport card spans 2 columns */
+.transport-card {
+  grid-column: 1 / 3;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.25rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #f3f4f6;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #3b82f6;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.card-header h3 {
+  color: #1e3a8a;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.card-icon-header {
+  color: #3b82f6;
+  opacity: 0.8;
+}
+
+.card-content {
+  color: #4b5563;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+.card-btn-footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.small-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.small-action-btn:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* Road Code Card */
+.road-code-card {
+  height: 100%;
+}
+
+.road-code-card .card-content p {
+  font-size: 0.75rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Service Station Card */
+.service-station-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-station-card .map-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  margin: 0.25rem 0;
+  flex: 1;
+}
+
+.map-pin {
+  padding: 0.2rem 0.5rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.station-pin {
+  background-color: #10b981;
+}
+
+.user-pin {
+  background-color: #f59e0b;
+}
+
+/* Accidents Card */
+.accidents-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.accidents-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accident-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.accident-icon {
+  font-size: 1.5rem;
+}
+
+.hamburger-menu {
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.hamburger-menu:hover {
+  background-color: #f3f4f6;
+}
+
+.accidents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.accident-item {
+  padding: 0.5rem;
+  background-color: #fef2f2;
+  border-left: 3px solid #ef4444;
+  border-radius: 4px;
+}
+
+.accident-title {
+  font-weight: 600;
+  color: #dc2626;
+  margin-bottom: 0.5rem;
+}
+
+.accident-location {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.accident-date {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.accident-description {
+  color: #4b5563;
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+
+.accident-time {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* Transport Cards */
+.transport-card {
+  height: 100%;
+}
+
+/* Placeholder Card */
+.placeholder-card {
+  height: 100%;
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+}
+
+.placeholder-card .card-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-style: italic;
+}
+
+.transport-section h4 {
+  color: #3b82f6;
+  margin: 0 0 0.25rem 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.transport-section h5 {
+  color: #1e3a8a;
+  margin: 0.5rem 0 0.25rem 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.transport-section p {
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+  font-size: 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .cards-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .accidents-card {
+    grid-column: span 2;
+    grid-row: auto;
+  }
+
+  .transport-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  .org-info {
+    flex-direction: column;
+    text-align: center;
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .org-center {
+    margin: 0;
+  }
+
+  .org-left,
+  .org-right {
+    justify-content: center;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 0.75rem;
+  }
+
+  .accidents-card,
+  .transport-card {
+    grid-column: span 1;
+    grid-row: auto;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .card-header h3 {
+    font-size: 0.95rem;
+  }
+}

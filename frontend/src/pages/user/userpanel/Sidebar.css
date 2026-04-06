@@ -1,0 +1,537 @@
+/* ============================
+   Sidebar Shell
+   ============================ */
+.sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #0f2060 0%, #1e3a8a 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 3px 0 12px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.sidebar.open {
+  width: 280px;
+}
+
+.sidebar.closed {
+  width: 64px;
+  overflow: hidden;
+}
+
+/* ============================
+   Header (hamburger + title)
+   ============================ */
+.sidebar-header {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.hamburger-menu {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+  cursor: pointer;
+  padding: 0.45rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hamburger-menu:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================
+   Navigation
+   ============================ */
+.sidebar-nav {
+  flex: 1;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+/* ============================
+   Section (parent + children)
+   ============================ */
+.nav-section {
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s;
+}
+
+/* Active section gets a subtle left accent line */
+.nav-section.section-active {
+  background-color: rgba(96, 165, 250, 0.04);
+}
+
+.nav-section.section-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ============================
+   Parent Nav Item
+   ============================ */
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem 0.85rem 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  gap: 0;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Active parent */
+.nav-item.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 4px 0 0 #60a5fa;
+}
+
+.nav-item.active .nav-label {
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+/* ============================
+   Arrow & Icon
+   ============================ */
+.nav-arrow {
+  margin-right: 0.6rem;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.nav-item.expanded .nav-arrow {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.nav-icon {
+  margin-right: 0.85rem;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.nav-icon.icon-active {
+  color: #60a5fa;
+}
+
+.nav-item:hover .nav-icon {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================
+   Label
+   ============================ */
+.nav-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.25s, width 0.25s;
+}
+
+/* Active dot — right side indicator */
+.active-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #60a5fa;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(96, 165, 250, 0.7);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(0.85);
+  }
+}
+
+/* ============================
+   Sub-items Container
+   ============================ */
+.sub-items-container {
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================
+   Sub-item
+   ============================ */
+.sub-item {
+  display: flex;
+  align-items: center;
+  padding: 0.65rem 1rem 0.65rem 2.75rem;
+  cursor: pointer;
+  transition: background-color 0.18s, padding-left 0.18s;
+  color: rgba(255, 255, 255, 0.65);
+  position: relative;
+  gap: 0.6rem;
+  user-select: none;
+}
+
+.sub-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+  padding-left: 3rem;
+}
+
+/* Active sub-item — clear highlight */
+.sub-item.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding-left: 3.25rem;
+}
+
+.sub-item.active .sub-label {
+  color: #bfdbfe;
+  font-weight: 700;
+}
+
+/* Sub indicator bar */
+.sub-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.sub-indicator.active {
+  background-color: #fbbf24;
+  transform: scale(1.4);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+}
+
+.sub-item:hover .sub-indicator {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Sub label */
+.sub-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.35;
+  flex: 1;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+/* Right side checkmark for active sub-item */
+.sub-active-marker {
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background-color: #60a5fa;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(96, 165, 250, 0.6);
+}
+
+/* ============================
+   Footer (Settings)
+   ============================ */
+.sidebar-footer {
+  padding: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-user-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar-small {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.user-info-mini {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-name-mini {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role-mini {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fbbf24; /* Amber badge-like text */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.settings-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.settings-item.active {
+  background-color: rgba(96, 165, 250, 0.15);
+}
+
+.settings-icon {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.settings-icon.icon-active {
+  color: #60a5fa;
+}
+
+.settings-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.25s, width 0.25s;
+}
+
+/* ============================
+   Collapsed (Desktop) State
+   ============================ */
+.sidebar.closed .nav-label,
+.sidebar.closed .nav-arrow,
+.sidebar.closed .sidebar-title,
+.sidebar.closed .settings-label,
+.sidebar.closed .active-dot,
+.sidebar.closed .user-info-mini {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sidebar.closed .sidebar-user-card {
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+}
+
+.sidebar.closed .sub-items-container {
+  display: none !important;
+}
+
+.sidebar.closed .nav-item {
+  justify-content: center;
+  padding: 0.9rem 0.5rem;
+}
+
+.sidebar.closed .nav-icon {
+  margin-right: 0;
+}
+
+.sidebar.closed .settings-item {
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+}
+
+.sidebar.closed .settings-icon {
+  margin-right: 0;
+}
+
+/* ============================
+   Mobile
+   ============================ */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 2000;
+    width: 280px !important;
+    transform: translateX(-100%);
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.35);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.closed {
+    transform: translateX(-100%);
+    width: 280px !important;
+  }
+
+  /* On mobile closed ≠ icon-only, it's fully hidden — restore all labels */
+  .sidebar.closed .nav-label,
+  .sidebar.closed .nav-arrow,
+  .sidebar.closed .sidebar-title,
+  .sidebar.closed .settings-label,
+  .sidebar.closed .active-dot {
+    opacity: 1;
+    width: auto;
+    overflow: visible;
+    pointer-events: auto;
+  }
+
+  .sidebar.closed .sub-items-container {
+    display: flex !important;
+  }
+
+  .sidebar.closed .nav-item {
+    justify-content: flex-start;
+    padding: 0.85rem 1rem 0.85rem 1.25rem;
+  }
+
+  .sidebar.closed .nav-icon {
+    margin-right: 0.85rem;
+  }
+
+  .sidebar.closed .settings-item {
+    justify-content: flex-start;
+    padding: 0.75rem;
+  }
+
+  .sidebar.closed .settings-icon {
+    margin-right: 0.85rem;
+  }
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1500;
+    backdrop-filter: blur(3px);
+    cursor: pointer;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+}
