@@ -174,7 +174,7 @@ const Register = () => {
                 <div className="hidden lg:flex flex-col gap-8">
                     <div className="relative rounded-2xl overflow-hidden shadow-4xl">
                         <img
-                            src="src/assets/images/Liscence.png"
+                            src="/images/Liscence.png"
                             alt="Rejoignez SIAAH"
                             className="w-full h-auto aspect-[4/3] object-cover scale-x-[-1]"
                         />
