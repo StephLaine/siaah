@@ -108,7 +108,7 @@ const SuperAdminDashboard = () => {
                         <h3><MapPin size={18} /> Bureaux par Département</h3>
                         <p>Répartition des points de service physiques sur le territoire</p>
                     </div>
-                    <div style={{ height: 320, width: '100%' }}>
+                    <div style={{ height: 320, width: '100%', minHeight: 0, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={stats.officePieData?.length > 0 ? stats.officePieData : [{name: 'Aucun', value: 0}]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -136,7 +136,7 @@ const SuperAdminDashboard = () => {
                             <button className={period === 'year' ? 'active' : ''} onClick={() => setPeriod('year')}>Année</button>
                         </div>
                     </div>
-                    <div style={{ height: 320, width: '100%' }}>
+                    <div style={{ height: 320, width: '100%', minHeight: 0, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={evolutionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
@@ -164,7 +164,7 @@ const SuperAdminDashboard = () => {
                         <h3><Users size={18} /> Utilisateurs par Dép.</h3>
                         <p>Répartition géographique des usagers</p>
                     </div>
-                    <div style={{ height: 260, width: '100%' }}>
+                    <div style={{ height: 260, width: '100%', minHeight: 0, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie

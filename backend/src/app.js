@@ -18,6 +18,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Serve frontend static files
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendPath));
 // Health Check
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'SIAAH Backend is running' });
@@ -33,6 +36,14 @@ app.use('/api/vehicles',     require('./routes/vehicle.routes'));
 app.use('/api/licenses',     require('./routes/license.routes'));
 app.use('/api/appointments', require('./routes/appointment.routes'));
 app.use('/api/payments',     require('./routes/payment.routes'));
+
+// Fallback to React frontend for non-API routes
+app.get(/.*/, (req, res, next) => {
+    if (req.url.startsWith('/api/')) {
+        return next();
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
