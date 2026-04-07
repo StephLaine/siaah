@@ -35,7 +35,7 @@ const GestionPermisConfig = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/refs/categories', { headers: authHeader });
+      const res = await axios.get('/api/refs/categories', { headers: authHeader });
       if (res.data.status === 'success') {
         setCategories(res.data.data);
       }
@@ -66,10 +66,10 @@ const GestionPermisConfig = () => {
 
     try {
       if (isEditing) {
-        await axios.put(`http://localhost:5001/api/admin/categories/${currentId}`, formData, { headers: authHeader });
+        await axios.put(`/api/admin/categories/${currentId}`, formData, { headers: authHeader });
         showMessage('success', 'Catégorie mise à jour avec succès');
       } else {
-        await axios.post('http://localhost:5001/api/admin/categories', formData, { headers: authHeader });
+        await axios.post('/api/admin/categories', formData, { headers: authHeader });
         showMessage('success', 'Catégorie ajoutée avec succès');
       }
       resetForm();
@@ -95,7 +95,7 @@ const GestionPermisConfig = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) return;
     
     try {
-      await axios.delete(`http://localhost:5001/api/admin/categories/${id}`, { headers: authHeader });
+      await axios.delete(`/api/admin/categories/${id}`, { headers: authHeader });
       showMessage('success', 'Catégorie supprimée avec succès');
       fetchCategories();
     } catch (err) {

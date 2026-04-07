@@ -93,7 +93,7 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
   useEffect(() => {
     if (!initialUser?.id) return;
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5001/api/appointments/office?user_id=${initialUser.id}`, {
+    fetch(`/api/appointments/office?user_id=${initialUser.id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -110,7 +110,7 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
   useEffect(() => {
     if (!initialUser?.id) return;
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5001/api/admin/users/${initialUser.id}/comms`, {
+    fetch(`/api/admin/users/${initialUser.id}/comms`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -135,7 +135,7 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
 
   const handleSaveNote = async () => {
     try {
-      const res = await fetch(`http://localhost:5001/api/admin/users/${user.id}/profile`, {
+      const res = await fetch(`/api/admin/users/${user.id}/profile`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
       const formData = new FormData();
       formData.append('avatar', croppedImageBlob, 'avatar.jpg');
       
-      const res = await fetch(`http://localhost:5001/api/admin/users/${user.id}/avatar`, {
+      const res = await fetch(`/api/admin/users/${user.id}/avatar`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -679,7 +679,7 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
                 const fData = new FormData(e.target);
                 const payload = Object.fromEntries(fData.entries());
                 try {
-                  const res = await fetch(`http://localhost:5001/api/admin/users/${user.id}/profile`, {
+                  const res = await fetch(`/api/admin/users/${user.id}/profile`, {
                     method: 'PUT',
                     headers: { 
                       'Content-Type': 'application/json',

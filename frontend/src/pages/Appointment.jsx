@@ -45,7 +45,7 @@ const Appointment = () => {
     const timeSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
 
     useEffect(() => {
-        fetch('http://localhost:5001/api/appointments/offices')
+        fetch('/api/appointments/offices')
             .then(r => r.json())
             .then(d => { if (d.status === 'success') setOffices(d.data); })
             .catch(console.error);
@@ -79,7 +79,7 @@ const Appointment = () => {
         if (e) e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5001/api/appointments', {
+            const res = await fetch('/api/appointments', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -110,7 +110,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/admin/users', { headers: authHeader });
+      const res = await axios.get('/api/admin/users', { headers: authHeader });
       setUsers(res.data.data.filter(u => u.role_id === 4)); // Only client users
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -122,7 +122,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const fetchUserDetail = async (userId) => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5001/api/admin/users/${userId}`, { headers: authHeader });
+      const res = await axios.get(`/api/admin/users/${userId}`, { headers: authHeader });
       const fetchedUser = res.data.data;
       
       // Filter requests based on allowed services for employees/admin
@@ -158,7 +158,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const fetchOfficeRequests = async () => {
     try {
       setRequestsLoading(true);
-      const res = await axios.get('http://localhost:5001/api/requests/office-requests', { headers: authHeader });
+      const res = await axios.get('/api/requests/office-requests', { headers: authHeader });
       if (res.data.status === 'success') setRequests(res.data.data);
     } catch (err) {
       console.error('Error fetching office requests:', err);
@@ -169,7 +169,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
 
   const updateRequestStatus = async (id, newStatus, note = '', details = null) => {
     try {
-      await axios.patch(`http://localhost:5001/api/requests/${id}/status`, { status: newStatus, note, details }, { headers: authHeader });
+      await axios.patch(`/api/requests/${id}/status`, { status: newStatus, note, details }, { headers: authHeader });
       await fetchOfficeRequests();
       return true;
     } catch (err) {
@@ -181,7 +181,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/entity-admin/stats', { headers: authHeader });
+      const res = await axios.get('/api/entity-admin/stats', { headers: authHeader });
       if (res.data.status === 'success') {
         setStats(res.data.data.stats);
         setRecentActivity(res.data.data.recentActivity);
@@ -196,7 +196,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/entity-admin/employees', { headers: authHeader });
+      const res = await axios.get('/api/entity-admin/employees', { headers: authHeader });
       setEmployees(res.data.data);
     } catch (err) {
       console.error('Error fetching employees:', err);
@@ -207,7 +207,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
 
   const fetchOffices = async () => {
     try {
-      const res = await axios.get('http://localhost:5001/api/entity-admin/offices', { headers: authHeader });
+      const res = await axios.get('/api/entity-admin/offices', { headers: authHeader });
       setOffices(res.data.data);
     } catch (err) {
       console.error('Error fetching offices:', err);
@@ -218,7 +218,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     e.preventDefault();
     try {
       setLoading(true);
-      await axios.post('http://localhost:5001/api/entity-admin/employees', newEmployee, { headers: authHeader });
+      await axios.post('/api/entity-admin/employees', newEmployee, { headers: authHeader });
       setShowEmployeeModal(false);
       setNewEmployee({ first_name: '', last_name: '', email: '', password: '', phone: '', office_id: '' });
       fetchEmployees();
@@ -464,7 +464,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const confirmSendMessage = async () => {
     try {
       setLoading(true);
-      await axios.post('http://localhost:5001/api/requests/message', messageData, { headers: authHeader });
+      await axios.post('/api/requests/message', messageData, { headers: authHeader });
       setShowMessageModal(false);
       setMessageData({ subject: '', message: '', userId: null });
       alert('Message envoyé avec succès.');
@@ -480,7 +480,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     if (!searchDocId.trim()) return;
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5001/api/admin/search?query=${searchDocId.trim()}`, { headers: authHeader });
+      const res = await axios.get(`/api/admin/search?query=${searchDocId.trim()}`, { headers: authHeader });
       const { type, data } = res.data;
       
       if (type === 'request') {

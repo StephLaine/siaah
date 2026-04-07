@@ -625,13 +625,13 @@ const AnalysisPanel = ({ requestData, onBack, onValidate, onReject, onMessage, t
                          <div className="w-full flex flex-col items-center">
                            {(docToView.path?.toLowerCase().endsWith('.pdf') || docToView.url?.toLowerCase().endsWith('.pdf')) ? (
                              <iframe 
-                               src={docToView.url || `http://localhost:5001/uploads/${docToView.path}`} 
+                               src={docToView.url || `/uploads/${docToView.path}`} 
                                className="w-full h-[700px] border-none"
                                title="Aperçu du PDF"
                              />
                            ) : (
                              <img 
-                               src={docToView.url || `http://localhost:5001/uploads/${docToView.path}`} 
+                               src={docToView.url || `/uploads/${docToView.path}`} 
                                alt={docToView.name} 
                                className="max-w-full h-auto rounded border border-slate-100 shadow-md" 
                              />

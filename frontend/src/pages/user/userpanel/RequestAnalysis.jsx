@@ -24,7 +24,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
 
   const handleViewDoc = (path) => {
     if (!path) return;
-    window.open(`http://localhost:5001/uploads/${path}`, '_blank');
+    window.open(`/uploads/${path}`, '_blank');
   };
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
     const fetchFull = async () => {
       setLoadingRequest(true);
       try {
-        const res = await fetch(`http://localhost:5001/api/requests/admin/${requestData.id}`, {
+        const res = await fetch(`/api/requests/admin/${requestData.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -65,7 +65,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
     if (!requestData?.user_id || !token) return;
     const fetchUser = async () => {
       try {
-        const res = await fetch(`http://localhost:5001/api/admin/users/${requestData.user_id}`, {
+        const res = await fetch(`/api/admin/users/${requestData.user_id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -115,7 +115,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
     
     saveDraftTimeout.current = setTimeout(async () => {
       try {
-        await fetch(`http://localhost:5001/api/requests/${req.id}/status`, {
+        await fetch(`/api/requests/${req.id}/status`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

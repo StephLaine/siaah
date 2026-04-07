@@ -8,7 +8,7 @@ const Profile = () => {
 
     useEffect(() => {
         if (!token) return;
-        fetch('http://localhost:5001/api/appointments/mine', {
+        fetch('/api/appointments/mine', {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(r => r.json())

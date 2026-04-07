@@ -137,7 +137,7 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
 
     searchTimer.current = setTimeout(async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/admin/search?query=${encodeURIComponent(val)}`, {
+        const res = await axios.get(`/api/admin/search?query=${encodeURIComponent(val)}`, {
           headers: authHeader
         });
         

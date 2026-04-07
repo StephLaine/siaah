@@ -39,7 +39,7 @@ const PriseRendezVous = ({ onBack }) => {
 
   // Fetch offices
   useEffect(() => {
-    fetch('http://localhost:5001/api/appointments/offices')
+    fetch('/api/appointments/offices')
       .then(r => r.json())
       .then(d => { if (d.status === 'success') setOffices(d.data); })
       .catch(console.error);
@@ -73,7 +73,7 @@ const PriseRendezVous = ({ onBack }) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/appointments', {
+      const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -52,9 +52,9 @@ const Reports = () => {
         setLoading(true);
         try {
             let url = '';
-            if (activeTab === 'requests') url = 'http://localhost:5001/api/requests/office-requests';
-            else if (activeTab === 'users') url = 'http://localhost:5001/api/admin/users';
-            else if (activeTab === 'appointments') url = 'http://localhost:5001/api/appointments/office';
+            if (activeTab === 'requests') url = '/api/requests/office-requests';
+            else if (activeTab === 'users') url = '/api/admin/users';
+            else if (activeTab === 'appointments') url = '/api/appointments/office';
 
             const res = await axios.get(url, authHeader);
             if (res.data.status === 'success') {

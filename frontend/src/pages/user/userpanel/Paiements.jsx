@@ -24,7 +24,7 @@ const Paiements = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/requests', {
+        const response = await fetch('/api/requests', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

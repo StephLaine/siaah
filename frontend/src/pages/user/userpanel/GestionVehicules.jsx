@@ -9,7 +9,7 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import './Vehicles.css';
 
-const API_BASE = 'http://localhost:5001/api/vehicles';
+const API_BASE = '/api/vehicles';
 
 const GestionVehicules = ({ defaultSection }) => {
   const { token, user } = useAuth();

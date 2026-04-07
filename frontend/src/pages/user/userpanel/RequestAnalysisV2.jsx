@@ -13,7 +13,7 @@ const RequestAnalysisV2 = ({ requestData, onBack, onValidate, onReject, onMessag
     const fetchFull = async () => {
       setLoadingRequest(true);
       try {
-        const res = await fetch(`http://localhost:5001/api/requests/admin/${requestData.id}`, {
+        const res = await fetch(`/api/requests/admin/${requestData.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('API Error');

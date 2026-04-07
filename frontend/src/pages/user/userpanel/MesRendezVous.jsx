@@ -39,7 +39,7 @@ const MesRendezVous = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/appointments/office', { headers: authHeader });
+      const res = await fetch('/api/appointments/office', { headers: authHeader });
       const data = await res.json();
       if (data.status === 'success') {
         let rows = data.data;
@@ -62,7 +62,7 @@ const MesRendezVous = () => {
 
   const updateStatus = async (id, status) => {
     try {
-      await fetch(`http://localhost:5001/api/appointments/${id}/status`, {
+      await fetch(`/api/appointments/${id}/status`, {
         method: 'PATCH',
         headers: { ...authHeader, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

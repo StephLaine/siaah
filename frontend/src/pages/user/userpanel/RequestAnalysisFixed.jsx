@@ -32,7 +32,7 @@ const RequestAnalysisFixed = ({ requestData, onBack, onValidate, onReject, onMes
     const fetchFull = async () => {
       setLoadingRequest(true);
       try {
-        const res = await fetch(`http://localhost:5001/api/requests/admin/${requestData.id}`, {
+        const res = await fetch(`/api/requests/admin/${requestData.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();

@@ -18,7 +18,7 @@ const MesVehicules = () => {
   const fetchVehicles = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/vehicles/my', {
+      const res = await axios.get('/api/vehicles/my', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setVehicles(res.data.data);
