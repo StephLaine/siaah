@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-// Vite remplace ceci par votre variable d'environnement (si configurée dans Render)
-const backendUrl = import.meta.env.VITE_API_URL || '';
+// Vite remplace ceci par votre variable d'environnement (si configurée)
+// Sinon, il bascule sur le backend de production si on n'est pas en local
+const backendUrl = import.meta.env.VITE_API_URL || 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? '' 
+        : 'https://siaah-backend.onrender.com');
 
 // 1. Configurer Axios globalement
 axios.defaults.baseURL = backendUrl;

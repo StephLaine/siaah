@@ -38,11 +38,17 @@ app.use('/api/appointments', require('./routes/appointment.routes'));
 app.use('/api/payments',     require('./routes/payment.routes'));
 
 // Fallback to React frontend for non-API routes
+const fs = require('fs');
 app.get(/.*/, (req, res, next) => {
     if (req.url.startsWith('/api/')) {
         return next();
     }
-    res.sendFile(path.join(frontendPath, 'index.html'));
+    const htmlPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(htmlPath)) {
+        res.sendFile(htmlPath);
+    } else {
+        res.status(200).json({ status: 'OK', message: 'SIAAH Backend is running (Frontend files not found)' });
+    }
 });
 
 // Error Handling Middleware
