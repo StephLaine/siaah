@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Building2, Users, MapPin, FileCheck, TrendingUp, Activity, AlertCircle, Layers } from 'lucide-react';
+import { 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+    LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
+} from 'recharts';
 import './SuperAdmin.css';
 
 const StatCard = ({ icon, label, value, color, trend }) => (
@@ -12,11 +16,6 @@ const StatCard = ({ icon, label, value, color, trend }) => (
         {trend && <div className="sa-stat-trend"><TrendingUp size={14} /><span>{trend}</span></div>}
     </div>
 );
-
-import { 
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
-} from 'recharts';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#7c3aed', '#6366f1', '#ef4444'];
 

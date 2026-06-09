@@ -502,6 +502,36 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
 
   const filteredRecentActivity = recentActivity; // Simplified for now
 
+  const getActiveService = () => {
+    if (activeSection.includes('permis')) {
+      return 'permis';
+    }
+    if (activeSection.includes('immatriculation') || ['reception-demandes', 'documents-analyse', 'dossiers-traites', 'dossiers-refuses'].includes(activeSection)) {
+      return 'immatriculation';
+    }
+    if (activeSection.includes('assurance')) {
+      return 'assurance';
+    }
+    if (activeSection.includes('contravention')) {
+      return 'contravention';
+    }
+    return '';
+  };
+
+  const getServiceRequests = () => {
+    const service = getActiveService();
+    if (!service) return [];
+    return requests.filter(r => (r.service_name || r.type || '').toLowerCase().includes(service));
+  };
+
+  const serviceReqs = getServiceRequests();
+  const countPending = serviceReqs.filter(r => r.status === 'pending').length;
+  const countProcessing = serviceReqs.filter(r => r.status === 'processing' || r.status === 'paused').length;
+  const countPaiements = serviceReqs.filter(r => r.status === 'validated' || r.status === 'paiement').length;
+  const countALivrer = serviceReqs.filter(r => r.status === 'to_deliver').length;
+  const countCompleted = serviceReqs.filter(r => r.status === 'completed').length;
+  const countRejected = serviceReqs.filter(r => r.status === 'rejected').length;
+
   // ─── MAIN RENDER LOGIC ────────────────────────────────────────────────────
   let content = null;
 
@@ -643,12 +673,12 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
           </div>
         </div>
         <div className="tabs-section">
-          <button className={`tab ${activeTab === 'nouvelles-demandes' ? 'active' : ''}`} onClick={() => onTabSelect('nouvelles-demandes')}>Nouvelle demande</button>
-          <button className={`tab ${activeTab === 'documents-analyse' ? 'active' : ''}`} onClick={() => onTabSelect('documents-analyse')}>Analyse en cours</button>
-          <button className={`tab ${activeTab === 'paiements' ? 'active' : ''}`} onClick={() => onTabSelect('paiements')}>Paiement</button>
-          <button className={`tab ${activeTab === 'a-livrer' ? 'active' : ''}`} onClick={() => onTabSelect('a-livrer')}>À livrer</button>
-          <button className={`tab ${activeTab === 'dossiers-traites' ? 'active' : ''}`} onClick={() => onTabSelect('dossiers-traites')}>Demande traité</button>
-          <button className={`tab ${activeTab === 'dossiers-refuses' ? 'active' : ''}`} onClick={() => onTabSelect('dossiers-refuses')}>Demande refusé</button>
+          <button className={`tab ${activeTab === 'nouvelles-demandes' ? 'active' : ''}`} onClick={() => onTabSelect('nouvelles-demandes')}>Nouvelle demande ({countPending})</button>
+          <button className={`tab ${activeTab === 'documents-analyse' ? 'active' : ''}`} onClick={() => onTabSelect('documents-analyse')}>Analyse en cours ({countProcessing})</button>
+          <button className={`tab ${activeTab === 'paiements' ? 'active' : ''}`} onClick={() => onTabSelect('paiements')}>Paiement ({countPaiements})</button>
+          <button className={`tab ${activeTab === 'a-livrer' ? 'active' : ''}`} onClick={() => onTabSelect('a-livrer')}>À livrer ({countALivrer})</button>
+          <button className={`tab ${activeTab === 'dossiers-traites' ? 'active' : ''}`} onClick={() => onTabSelect('dossiers-traites')}>Demande traité ({countCompleted})</button>
+          <button className={`tab ${activeTab === 'dossiers-refuses' ? 'active' : ''}`} onClick={() => onTabSelect('dossiers-refuses')}>Demande refusé ({countRejected})</button>
         </div>
         <div className="table-container shadow-sm">
           <table className="data-table">

@@ -2,6 +2,34 @@
    ADMINISTRATION HEADER — SIAAH
    ═══════════════════════════════════════════════════ */
 
+/* ── Mobile blurred backdrop for admin dropdowns ─── */
+.admin-mobile-sheet-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-mobile-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 398;
+    background: rgba(10, 18, 50, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: adminBackdropIn 0.22s ease-out;
+  }
+
+  @keyframes adminBackdropIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 .admin-header {
   background-color: #1a367c;
   display: flex;
@@ -30,31 +58,25 @@
 /* ── Logo ────────────────────────────────────────── */
 .logo-section {
   display: flex;
-  flex-shrink: 600;
+  flex-shrink: 0;
 }
 
 .logo {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
 }
 
-.logo-main-text {
-  font-size: 28px;
-  font-weight: 900;
-  color: white;
-  letter-spacing: 3px;
-  line-height: 1;
-  margin: 0;
+.header-logo-img {
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.2s;
 }
 
-.logo-definition {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.75);
-  font-weight: 500;
-  margin-top: 4px;
-  max-width: 320px;
-  letter-spacing: 0.1px;
-  line-height: 1.2;
+.header-logo-img:hover {
+  transform: scale(1.05);
 }
 
 /* ── Search ──────────────────────────────────────── */
@@ -63,7 +85,8 @@
   display: flex;
   justify-content: center;
   position: relative;
-  max-width: 500px; /* Taille optimale pour la recherche centrale */
+  max-width: 500px;
+  /* Taille optimale pour la recherche centrale */
   margin: 0 20px;
 }
 
@@ -264,33 +287,171 @@
   flex-shrink: 0;
 }
 
+.notification-bell-wrapper {
+  position: relative;
+}
+
 .notification-bell {
+  background: transparent;
+  border: none;
+  padding: 8px;
   position: relative;
   color: white;
   cursor: pointer;
   opacity: 0.85;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
-.notification-bell:hover {
+.notification-bell:hover,
+.notification-bell.active {
   opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .notification-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: 4px;
+  right: 4px;
   background: #ef4444;
   color: white;
   font-size: 9px;
-  font-weight: 700;
-  width: 16px;
+  font-weight: 800;
+  min-width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid #1a367c;
+  padding: 0 4px;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* ── Admin Notification Dropdown ────────────────── */
+.admin-notification-dropdown {
+  position: absolute;
+  right: -100px;
+  top: calc(100% + 12px);
+  width: 360px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  z-index: 400;
+  animation: fadeDown 0.18s ease;
+}
+
+.admin-notification-dropdown .dropdown-header-title {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.admin-notification-dropdown .dropdown-header-title h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.admin-notification-dropdown .mark-read-btn {
+  background: transparent;
+  border: none;
+  color: #3b82f6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.admin-notification-dropdown .mark-read-btn:hover {
+  background: #eff6ff;
+}
+
+.admin-notification-dropdown .notification-list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.admin-notification-dropdown .notification-item {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.admin-notification-dropdown .notification-item:hover {
+  background-color: #f8fafc;
+}
+
+.admin-notification-dropdown .notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.admin-notification-dropdown .notification-item.unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #3b82f6;
+}
+
+.admin-notification-dropdown .notif-content {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.admin-notification-dropdown .notif-title {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.admin-notification-dropdown .notif-message {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.admin-notification-dropdown .notif-time {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.admin-notification-dropdown .unread-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.admin-notification-dropdown .empty-notifications {
+  padding: 40px 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  font-style: italic;
 }
 
 /* ── User Profile Trigger ────────────────────────── */
@@ -489,4 +650,130 @@
 .office-subtitle {
   color: rgba(255, 255, 255, 0.6);
   font-weight: 450;
+}
+
+/* Hamburguer menu button for admin header */
+.admin-hamburger-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.admin-hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .admin-hamburger-btn {
+    display: flex;
+  }
+
+  .top-header {
+    height: 70px;
+    padding: 0 12px;
+  }
+
+  .header-logo-img {
+    height: 30px;
+  }
+
+  /* Search Section on Mobile */
+  .search-section {
+    margin: 0 8px;
+  }
+
+  .header-search-input {
+    padding: 8px 36px 8px 12px;
+    font-size: 13px;
+  }
+
+  .header-search-icon,
+  .search-spinner {
+    right: 10px;
+  }
+
+  /* User profile & actions */
+  .header-actions {
+    gap: 8px;
+  }
+
+  .user-profile-text {
+    display: none;
+    /* Hide name text, keep avatar only */
+  }
+
+  .user-profile-trigger {
+    padding: 2px 0;
+  }
+
+  .user-avatar-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .profile-chevron {
+    display: none;
+    /* Hide profile dropdown chevron */
+  }
+
+  .secondary-header {
+    padding: 0 12px;
+    height: auto;
+    min-height: 40px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .office-title {
+    font-size: 11px;
+    flex-wrap: wrap;
+    line-height: 1.4;
+  }
+
+  .office-subtitle {
+    font-size: 10px;
+  }
+
+  /* ── Admin dropdowns → mobile bottom sheets ── */
+  .profile-dropdown-menu,
+  .admin-notification-dropdown {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    min-width: unset !important;
+    border-radius: 20px 20px 0 0 !important;
+    z-index: 399 !important;
+    animation: adminSheetUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.25) !important;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  @keyframes adminSheetUp {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Widen touch targets in admin dropdowns on mobile */
+  .profile-dropdown-item,
+  .admin-notification-dropdown .notification-item {
+    min-height: 44px;
+    padding: 12px 18px;
+  }
 }

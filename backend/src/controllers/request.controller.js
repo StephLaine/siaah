@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const { sendRequestConfirmation, sendStatusUpdateEmail, sendCustomMessageEmail } = require('../utils/email.service');
+const { createNotification } = require('./notification.controller');
 
 // Helper to sync user profile from request details
 const syncUserInfo = async (userId, details) => {
@@ -86,11 +87,19 @@ const createRequest = async (req, res) => {
             [req.user.id, type, details, finalStatus, price, office_id]
         );
 
-        // Send confirmation email asynchronously
+        // Send confirmation email and create notification
         pool.query('SELECT first_name, email FROM users WHERE id = $1', [req.user.id])
             .then(u => {
-                if (u.rows[0]) sendRequestConfirmation(u.rows[0], result.rows[0]);
-            }).catch(e => console.error('Email confirmation error:', e));
+                if (u.rows[0]) {
+                    sendRequestConfirmation(u.rows[0], result.rows[0]);
+                    createNotification(
+                        req.user.id,
+                        'Demande reçue',
+                        `Votre demande pour "${type}" a été enregistrée avec succès.`,
+                        'success'
+                    );
+                }
+            }).catch(e => console.error('Email confirmation/notification error:', e));
 
         res.status(201).json({ status: 'success', data: result.rows[0] });
     } catch (err) {
@@ -223,11 +232,19 @@ const updateRequestStatus = async (req, res) => {
 
         if (result.rows.length > 0) {
             const updatedReq = result.rows[0];
-            // Send update notification asynchronously
+            // Send update notification and email
             pool.query('SELECT id, first_name, email FROM users WHERE id = $1', [updatedReq.user_id])
                 .then(u => {
-                    if (u.rows[0]) sendStatusUpdateEmail(u.rows[0], updatedReq, note, req.user.id);
-                }).catch(e => console.error('Status update email error:', e));
+                    if (u.rows[0]) {
+                        sendStatusUpdateEmail(u.rows[0], updatedReq, note, req.user.id);
+                        createNotification(
+                            updatedReq.user_id,
+                            'Mise à jour de votre dossier',
+                            `Le statut de votre demande "${updatedReq.type}" est passé à : ${status}.`,
+                            'info'
+                        );
+                    }
+                }).catch(e => console.error('Status update email/notification error:', e));
         }
 
         if (result.rows.length === 0) {

@@ -1,14 +1,18 @@
 const { pool } = require('../config/db');
 const { generateToken } = require('../utils/auth.utils');
 const { sendWelcomeEmail } = require('../utils/email.service');
+const bcrypt = require('bcryptjs');
 
 const register = async (req, res) => {
     const { first_name, last_name, email, password, nif, role_id, office_id } = req.body;
 
     try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
         const result = await pool.query(
             'INSERT INTO users (first_name, last_name, email, password, nif, role_id, office_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-            [first_name, last_name, email, password, nif, role_id || 4, office_id || null]
+            [first_name, last_name, email, hashedPassword, nif, role_id || 4, office_id || null]
         );
 
         const user = { id: result.rows[0].id, first_name, last_name, email, role_id: role_id || 4, office_id: office_id || null };
@@ -38,7 +42,12 @@ const login = async (req, res) => {
         const result = await pool.query(query, [email]);
         const user = result.rows[0];
 
-        if (!user || user.password !== password) {
+        if (!user) {
+            return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
         }
 

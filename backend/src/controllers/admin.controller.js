@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const bcrypt = require('bcryptjs');
 
 // ─── Statistics ─────────────────────────────────────────────────────────────
 const getStats = async (req, res) => {
@@ -448,10 +449,13 @@ const getRoles = async (req, res) => {
 const createUser = async (req, res) => {
     const { first_name, last_name, email, password, nif, phone, role_id, office_id, assigned_services = [] } = req.body;
     try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        
         const result = await pool.query(
             `INSERT INTO users (first_name, last_name, email, password, nif, phone, role_id, office_id, assigned_services)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-            [first_name, last_name, email, password, nif, phone, role_id, office_id || null, JSON.stringify(assigned_services)]
+            [first_name, last_name, email, hashedPassword, nif, phone, role_id, office_id || null, JSON.stringify(assigned_services)]
         );
         res.status(201).json({ status: 'success', data: result.rows[0] });
     } catch (err) { res.status(500).json({ status: 'error', message: err.message }); }
@@ -461,12 +465,18 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { first_name, last_name, email, password, nif, phone, role_id, office_id, assigned_services = [] } = req.body;
     try {
+        let hashedPassword = password;
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
+
         const result = await pool.query(
             `UPDATE users SET
                 first_name=$1, last_name=$2, email=$3, password=COALESCE($4, password),
                 nif=$5, phone=$6, role_id=$7, office_id=$8, assigned_services=$9
              WHERE id=$10 RETURNING *`,
-            [first_name, last_name, email, password || null, nif, phone, role_id, office_id || null, JSON.stringify(assigned_services), id]
+            [first_name, last_name, email, hashedPassword || null, nif, phone, role_id, office_id || null, JSON.stringify(assigned_services), id]
         );
         res.json({ status: 'success', data: result.rows[0] });
     } catch (err) { res.status(500).json({ status: 'error', message: err.message }); }

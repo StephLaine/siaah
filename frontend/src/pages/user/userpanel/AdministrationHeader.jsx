@@ -10,10 +10,11 @@ import {
   Building2,
   Clock,
   FileText,
-  X
+  X,
+  Menu
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 import './AdministrationHeader.css';
@@ -35,7 +36,7 @@ const getRoleLabel = (roleId) => {
   return 'Utilisateur';
 };
 
-const AdministrationHeader = ({ onResultClick, activeSection }) => {
+const AdministrationHeader = ({ onResultClick, activeSection, onToggleSidebar }) => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -105,7 +106,60 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchError, setSearchError] = useState('');
   const searchRef = useRef(null);
+  const notificationsRef = useRef(null);
   const searchTimer = useRef(null);
+
+  // ── Notifications Logic
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  // Mobile backdrop — true when any admin dropdown is open
+  const isAnyAdminDropdownOpen = profileOpen || isNotificationsOpen;
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get('/api/notifications', {
+        headers: authHeader
+      });
+      if (response.data.status === 'success') {
+        setNotifications(response.data.data);
+        setUnreadCount(response.data.data.filter(n => !n.is_read).length);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await axios.patch(`/api/notifications/${id}/read`, {}, {
+        headers: authHeader
+      });
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking as read:', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await axios.patch('/api/notifications/read-all', {}, {
+        headers: authHeader
+      });
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
 
   const authHeader = { Authorization: `Bearer ${token}` };
 
@@ -114,6 +168,7 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
     const handler = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) setIsNotificationsOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -140,12 +195,12 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
         const res = await axios.get(`/api/admin/search?query=${encodeURIComponent(val)}`, {
           headers: authHeader
         });
-        
+
         // The globalSearch API might return { status, type, data } for single match
         // or a list if refactored. For now, let's normalize to a list for the dropdown.
         const data = res.data;
         let finalResults = [];
-        
+
         if (data.status === 'success') {
           if (data.allResults) {
             finalResults = data.allResults.map(u => ({ ...u, result_type: 'user' }));
@@ -155,7 +210,7 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
             finalResults = [{ ...data.data, result_type: 'user' }];
           }
         }
-        
+
         setResults(finalResults);
         setSearchError('');
       } catch (err) {
@@ -176,20 +231,32 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
     navigate('/login');
   };
 
+  const closeAllAdminDropdowns = () => {
+    setProfileOpen(false);
+    setIsNotificationsOpen(false);
+  };
+
   return (
     <header className="admin-header">
+      {/* Mobile blurred backdrop for admin dropdowns */}
+      {isAnyAdminDropdownOpen && (
+        <div
+          className="admin-mobile-sheet-backdrop"
+          onClick={closeAllAdminDropdowns}
+          aria-hidden="true"
+        />
+      )}
       {/* ── Top Header ─────────────────────────────────────────── */}
       <div className="top-header">
+        <button className="admin-hamburger-btn" onClick={onToggleSidebar} title="Menu">
+          <Menu size={22} />
+        </button>
 
         {/* Left — Logo (Collé à gauche) */}
         <div className="logo-section">
-          <div className="logo">
-
-            <div className="logo-definition">
-              <h1 className="logo-main-text">SIAAH</h1>
-              Société d'immatriculation et d'assurance automobile d'Haïti
-            </div>
-          </div>
+          <Link to="/user/administration" className="logo">
+            <img src="/images/logo_siaah_white.svg" alt="SIAAH Logo" className="header-logo-img" />
+          </Link>
         </div>
 
         {/* Center — Recherche Globale */}
@@ -290,9 +357,45 @@ const AdministrationHeader = ({ onResultClick, activeSection }) => {
         {/* Right — Actions + Profile (Collé à droite) */}
         <div className="header-actions">
           {/* Notification Bell */}
-          <div className="notification-bell">
-            <Bell size={20} />
-            <span className="notification-badge">1</span>
+          <div className="notification-bell-wrapper" ref={notificationsRef}>
+            <button
+              className={`notification-bell ${isNotificationsOpen ? 'active' : ''}`}
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+            </button>
+
+            {isNotificationsOpen && (
+              <div className="admin-notification-dropdown">
+                <div className="dropdown-header-title">
+                  <h3>Notifications</h3>
+                  {unreadCount > 0 && (
+                    <button className="mark-read-btn" onClick={handleMarkAllRead}>Tout marquer comme lu</button>
+                  )}
+                </div>
+                <div className="notification-list">
+                  {notifications.length === 0 ? (
+                    <div className="empty-notifications">Aucune notification</div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={`notification-item ${!notif.is_read ? 'unread' : ''}`}
+                        onClick={() => handleMarkAsRead(notif.id)}
+                      >
+                        <div className="notif-content">
+                          <p className="notif-title">{notif.title}</p>
+                          <p className="notif-message">{notif.message}</p>
+                          <span className="notif-time">{new Date(notif.created_at).toLocaleString('fr-FR')}</span>
+                        </div>
+                        {!notif.is_read && <span className="unread-dot"></span>}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── User Profile Dropdown */}

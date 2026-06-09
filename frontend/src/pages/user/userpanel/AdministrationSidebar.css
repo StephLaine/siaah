@@ -66,6 +66,20 @@
   transform: scale(1.05);
 }
 
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-left: 4px;
+}
+
+.sidebar-logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  opacity: 1;
+}
+
 .sidebar-brand-box {
   padding: 10px 18px;
   margin: 12px 8px 10px;
@@ -189,14 +203,27 @@
   background: rgba(96, 165, 250, 0.12);
 }
 
-.sub-bullet {
-  opacity: 0.5;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+.sub-item.active .sub-bullet { opacity: 0.9; color: #60a5fa; }
+
+.sidebar-badge {
+  margin-left: auto;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  animation: badge-pulse 2s infinite;
+  min-width: 20px;
+  text-align: center;
 }
 
-.sub-item.active .sub-bullet { opacity: 0.9; color: #60a5fa; }
+@keyframes badge-pulse {
+  0% { transform: scale(1); box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3); }
+  50% { transform: scale(1.08); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3); }
+}
 
 /* ── Sidebar Footer / Déconnexion ────────────────── */
 .sidebar-footer {
@@ -246,4 +273,68 @@
 .admin-sidebar.closed .sidebar-logout-btn {
   justify-content: center;
   padding: 12px 0;
+}
+
+/* Mobile Sidebar Overrides */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 2000;
+    height: 100vh;
+    transform: translateX(-100%);
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.35);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+    width: 260px !important;
+  }
+
+  .admin-sidebar.closed {
+    transform: translateX(-100%);
+    width: 260px !important;
+  }
+
+  /* When closed on mobile, completely hide child elements */
+  .admin-sidebar.closed .nav-label-text,
+  .admin-sidebar.closed .expand-chevron,
+  .admin-sidebar.closed .sub-items,
+  .admin-sidebar.closed .sidebar-logo-container {
+    display: none !important;
+  }
+
+  .admin-sidebar.open .nav-label-text {
+    display: block;
+  }
+
+  .admin-sidebar.open .expand-chevron {
+    display: flex;
+  }
+
+  .admin-sidebar.open .sub-items {
+    display: block;
+  }
+}
+
+/* Mobile Overlay Backdrop */
+.admin-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1500;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  animation: adminFadeIn 0.2s ease;
+}
+
+@keyframes adminFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

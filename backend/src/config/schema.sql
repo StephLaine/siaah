@@ -134,9 +134,10 @@ CREATE TABLE IF NOT EXISTS service_requests (
 );
 
 -- Seed Initial Data
+-- role_id mapping used across the entire app:
+--   1 = SuperAdmin, 2 = Admin, 3 = Employee, 4 = User
 INSERT INTO roles (name) VALUES 
-('SuperAdmin'), ('Admin'), ('Employee'), ('Agent Immatriculation'), 
-('Agent Assurance'), ('Agent Permis'), ('Agent Routier'), ('User')
+('SuperAdmin'), ('Admin'), ('Employee'), ('User')
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO offices (name, type) VALUES 
@@ -145,3 +146,11 @@ INSERT INTO offices (name, type) VALUES
 ('DGI Port-au-Prince', 'DGI'), 
 ('DCPR Port-au-Prince', 'DCPR')
 ON CONFLICT (name) DO NOTHING;
+
+-- Default SuperAdmin user (plain-text password matches auth.controller.js)
+-- Credentials: admin@siaah.ht / Admin@2024!
+INSERT INTO users (first_name, last_name, email, password, role_id, office_id)
+SELECT 'Super', 'Admin', 'admin@siaah.ht', 'Admin@2024!',
+       (SELECT id FROM roles  WHERE name = 'SuperAdmin' LIMIT 1),
+       (SELECT id FROM offices WHERE name = 'SIAAH Headquarters' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@siaah.ht');

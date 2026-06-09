@@ -6,7 +6,7 @@ import { Mail, Lock, Eye, EyeOff, Linkedin, Facebook, Twitter, Phone, Send } fro
 import { motion } from 'framer-motion';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -33,7 +33,7 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            const loggedUser = await login(username, password);
+            const loggedUser = await login(email, password);
             // Redirection sécurisée : si l'utilisateur venait d'une route protégée,
             // on le renvoie là-bas uniquement si son rôle y est autorisé.
             // Sinon, on l'envoie vers sa page d'accueil par défaut.
@@ -83,15 +83,15 @@ const Login = () => {
 
                         <div className="space-y-1">
                             <label className="text-sm font-bold text-[#4a4a4a] uppercase tracking-wide">
-                                Nom d'utilisateur
+                                Adresse e-mail
                             </label>
                             <div className="relative">
                                 <input
-                                    type="text"
+                                    type="email"
                                     className="w-full bg-[#f4f1f1] border-none rounded-lg px-4 py-3 text-base placeholder:text-[#b5a7a7] focus:ring-2 focus:ring-[#3b5998]/20 transition-all outline-none"
-                                    placeholder="Enter your username"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="exemple@mef.ht"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </div>

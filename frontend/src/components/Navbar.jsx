@@ -204,15 +204,12 @@ const Navbar = () => {
             {/* Row 1: Logo and Search/CTA */}
             <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 {/* Logo Section */}
-                <Link to="/" className="flex items-center gap-3">
-                    <div className="flex flex-col items-start leading-none hidden sm:flex">
-                        <h1 className="text-2xl font-extrabold text-[#C1272D] tracking-tight">SIAAH</h1>
-                        <span className="text-[10px] font-bold text-gray-800 uppercase tracking-tighter mt-1">
-                            société d'immatriculation et d'assurance des vehicules Haitienne
-                        </span>
-
-
-                    </div>
+                <Link to="/" className="flex items-center no-underline">
+                    <img
+                        src="/images/logo_siaah_main.svg"
+                        alt="SIAAH — Société de l'Immatriculation et de l'Assurance Automobile en Haïti"
+                        className="h-28 w-auto object-contain"
+                    />
                 </Link>
 
                 {/* Search, Connect & Lang Group */}

@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard, Building2, MapPin, Users, ChevronLeft,
     ChevronRight, LogOut, Menu, ShieldCheck, Bell, Settings, Layers
@@ -11,9 +11,24 @@ import './SuperAdminLayout.css';
 const SuperAdminLayout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    
+    // On mobile start closed, on desktop start open
+    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-    // Sécurité gérée par ProtectedRoute dans routes.jsx
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth <= 768;
+            setIsMobile(mobile);
+            if (!mobile) {
+                setSidebarOpen(true);
+            } else {
+                setSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -34,7 +49,7 @@ const SuperAdminLayout = () => {
             <aside className="sa-sidebar">
                 <div className="sa-sidebar-header">
                     <div className="sa-logo">
-
+                        <img src="/images/logo_siaah_white.svg" alt="SIAAH" className="sa-logo-img-header" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
                         {sidebarOpen && <div className="sa-logo-text"><span>SIAAH</span><small>Super Admin</small></div>}
                     </div>
                     <button className="sa-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -72,6 +87,11 @@ const SuperAdminLayout = () => {
                     </button>
                 </div>
             </aside>
+
+            {/* Mobile overlay — only when sidebar is open on mobile */}
+            {isMobile && sidebarOpen && (
+                <div className="mobile-overlay" onClick={() => setSidebarOpen(false)}></div>
+            )}
 
             {/* Main Content */}
             <div className="sa-main">

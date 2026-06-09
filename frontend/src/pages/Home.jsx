@@ -60,7 +60,8 @@ const Home = () => {
             <section className="relative bg-[#0d1440] min-h-[500px] lg:min-h-[600px] flex items-center justify-center py-20 overflow-hidden">
                 <div
                     className="absolute  w-[100%] h-full opacity-10 bg-contain"
-                    style={{ backgroundImage: `url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200` }}
+
+                    style={{ backgroundImage: "url('/images/Coat_of_arms_of_Haiti.svg')" }}
                 ></div>
                 <div className="container mx-auto px-4 relative z-10 text-center text-white">
                     <div className="max-w-5xl mx-auto space-y-12">

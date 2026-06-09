@@ -585,6 +585,165 @@
   
   .doc-tile-card {
     width: 100%;
+    max-width: 100%;
+  }
+
+  .card-inner-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .header-left {
+    gap: 1rem;
+  }
+
+  .header-right {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .siaah-definition-header {
+    text-align: left;
+  }
+
+  .card-content-body {
+    padding: 1.25rem 1rem;
+  }
+
+  /* Operations & Service buttons */
+  .operations-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .service-btn-item {
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Steps & Footer on Mobile */
+  .card-inner-footer {
+    flex-direction: column-reverse;
+    gap: 1.25rem;
+    padding: 1.25rem 1rem;
+    align-items: stretch;
+  }
+
+  .footer-actions {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .step-progress-wrapper {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  /* Pro form grid and rows */
+  .pro-row {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .pro-form-card {
+    padding: 1.25rem;
+  }
+
+  .pro-form-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .pro-form-header h3 {
+    font-size: 1.4rem;
+  }
+
+  /* Recap modern responsive styles */
+  .recap-row {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .recap-header-blue {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .recap-header-blue h3 {
+    font-size: 1.2rem !important;
+  }
+
+  .recap-body-scroll {
+    padding: 1rem;
+  }
+
+  .file-preview-list-recap {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-notice {
+    padding: 1rem;
+  }
+
+  /* Document upload list on mobile */
+  .req-doc-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 1rem;
+  }
+
+  .req-doc-info {
+    gap: 0.75rem;
+  }
+
+  .req-doc-actions,
+  .req-doc-actions-complex {
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .photo-office-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ── Touch target & input refinements (mobile) ── */
+  .nav-btn-next,
+  .nav-btn-back-red,
+  .close-request-btn,
+  .btn-status-view {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .nav-btn-next,
+  .nav-btn-back-red {
+    padding: 0.85rem 1.5rem;
+    font-size: 0.95rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .close-request-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .op-grid-btn {
+    min-height: 52px;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+  }
+
+  .service-btn-item {
+    min-height: 52px;
   }
 }
 
@@ -2146,4 +2305,106 @@
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* --- New UX Improvement Styles --- */
+
+.loading-overlay-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loader-box {
+  background: white;
+  padding: 3rem;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  text-align: center;
+}
+
+.loader-box h3 {
+  color: #1e3a8a;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.loader-box p {
+  color: #64748b;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.uploaded-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.doc-mini-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  background: #f1f5f9;
+}
+
+.doc-mini-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.filename-attached {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 2px;
+}
+
+.req-doc-row.is-uploaded {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+.status-pill.pill-required {
+  background: #fee2e2;
+  color: #ef4444;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.status-pill.pill-optional {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

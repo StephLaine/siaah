@@ -39,7 +39,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('/images/logosiaah.png');
+    background-image: url('/images/logosiaah.svg');
     background-size: 160px;
     background-repeat: no-repeat;
     background-position: center bottom -25px;
@@ -62,6 +62,7 @@
 .sa-logo {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
 .sa-logo-icon {
@@ -371,5 +372,24 @@
 
     .sa-content {
         padding: 1.25rem;
+    }
+
+    /* Mobile overlay backdrop */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 90; /* below sidebar 100, above main content */
+        backdrop-filter: blur(3px);
+        cursor: pointer;
+        animation: saFadeIn 0.2s ease;
+    }
+
+    @keyframes saFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 }

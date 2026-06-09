@@ -365,7 +365,6 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
         drivingExperienceYears: '',
 
         // Medical
-        bloodGroup: '',
         wearsGlasses: false,
         hasMedicalCondition: false,
         medicalConditionDetails: '',
@@ -1430,7 +1429,6 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                     );
                                                 }
 
-                                                // Clean label for matching logic
                                                 const existingDoc = documents.find(d => d.type === reqType);
 
                                                 return (
@@ -1439,21 +1437,33 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                             <div className="doc-status-icon">
                                                                 {existingDoc ? <FileCheck size={20} color="#10b981" /> : <Info size={20} color="#94a3b8" />}
                                                             </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                <span className="req-doc-name">{reqType}</span>
-                                                                <span className={`status-pill ${isRequired ? 'pill-required' : 'pill-optional'}`}>
-                                                                    {isRequired ? 'Obligatoire' : 'Optionnel'}
-                                                                </span>
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                    <span className="req-doc-name">{reqType}</span>
+                                                                    <span className={`status-pill ${isRequired ? 'pill-required' : 'pill-optional'}`}>
+                                                                        {isRequired ? 'Obligatoire' : 'Optionnel'}
+                                                                    </span>
+                                                                </div>
+                                                                {existingDoc && (
+                                                                    <span className="filename-attached">
+                                                                        <Tag size={12} /> {(existingDoc.file || {}).name || "Fichier joint"}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
 
                                                         <div className="req-doc-actions">
                                                             {existingDoc ? (
-                                                                <div className="uploaded-file-info">
-                                                                    <span className="filename-small">{(existingDoc.file || {}).name || "Fichier joint"}</span>
+                                                                <div className="uploaded-actions-row">
+                                                                    {existingDoc.file && existingDoc.file.type.startsWith('image/') && (
+                                                                        <div className="doc-mini-preview">
+                                                                            <img src={URL.createObjectURL(existingDoc.file)} alt="preview" />
+                                                                        </div>
+                                                                    )}
                                                                     <button
                                                                         className="btn-trash-only"
                                                                         onClick={() => setDocuments(documents.filter(d => d.type !== (existingDoc.type)))}
+                                                                        title="Supprimer"
                                                                     >
                                                                         <Trash2 size={16} />
                                                                     </button>
@@ -1865,6 +1875,16 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
             <footer className="page-official-footer">
                 <em>SIAAH - Plateforme officielle MEF</em>
             </footer>
+
+            {isSubmitting && (
+                <div className="loading-overlay-full">
+                    <div className="loader-box">
+                        <Loader2 className="animate-spin" size={48} color="#1e3a8a" />
+                        <h3>Traitement en cours</h3>
+                        <p>Veuillez ne pas fermer cette page...</p>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getUserRequests, createRequest, getRequestById, getRequestByIdAdmin, getAllRequests, getOfficeRequests, getOffices, updateRequestStatus, updateRequest, deleteRequest, payRequest, searchRequests, getServices, sendUserMessage } = require('../controllers/request.controller');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth.middleware');
+const { validateRequest } = require('../middleware/request.validation');
 const upload = require('../middleware/upload.middleware');
 
 // All request routes require authentication
@@ -22,9 +23,9 @@ router.get('/office-requests', roleMiddleware([1, 2, 3]), getOfficeRequests);
 router.get('/admin/:id', roleMiddleware([1, 2, 3]), getRequestByIdAdmin);
 
 // Request Actions
-router.post('/', upload.any(), createRequest);
+router.post('/', upload.any(), validateRequest, createRequest);
 router.get('/:id', getRequestById);
-router.put('/:id', upload.any(), updateRequest);
+router.put('/:id', upload.any(), validateRequest, updateRequest);
 router.patch('/:id/status', roleMiddleware([1, 2, 3]), updateRequestStatus);
 router.delete('/:id', deleteRequest);
 router.post('/:id/pay', payRequest);

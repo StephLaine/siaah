@@ -36,6 +36,7 @@ app.use('/api/vehicles',     require('./routes/vehicle.routes'));
 app.use('/api/licenses',     require('./routes/license.routes'));
 app.use('/api/appointments', require('./routes/appointment.routes'));
 app.use('/api/payments',     require('./routes/payment.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
 
 // Fallback to React frontend for non-API routes
 const fs = require('fs');

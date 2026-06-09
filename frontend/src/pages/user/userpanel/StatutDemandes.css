@@ -711,31 +711,145 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .statut-demandes {
     padding: 1rem;
   }
   
   .statut-title-section {
     padding: 1rem;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
   }
 
+  .statut-title-section h1 {
+    font-size: 1.25rem;
+    flex: none;
+  }
+
+  .statut-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .view-switcher, 
+  .sort-wrapper {
+    width: 100%;
+  }
+
+  .view-btn, 
+  .sort-select {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* Filters stack on mobile */
+  .pro-filters-bar.unified-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 1rem;
+  }
+
+  .filter-item {
+    width: 100%;
+  }
+
+  .filter-select-wrapper {
+    width: 100%;
+  }
+
+  .filter-select-wrapper select {
+    width: 100%;
+    flex: 1;
+  }
+
+  .date-inputs-compact {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .date-inputs-compact input {
+    width: 45%;
+    flex: 1;
+  }
+
+  .search-container-mini {
+    width: 100%;
+  }
+
+  .btn-reset-mini {
+    width: 100%;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  /* Accordions and tables */
   .accordion-header {
     padding: 1rem;
   }
 
   .accordion-content-table {
-    padding: 0 1rem 1rem 1rem;
+    padding: 0 0.5rem 1rem 0.5rem;
   }
 
-  .date-inputs {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .demandes-pro-table th,
+  .demandes-pro-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .action-buttons-group {
+    gap: 4px;
+  }
+
+  .btn-action-view,
+  .btn-action-pay,
+  .btn-action-cancel,
+  .btn-action-edit,
+  .btn-attestation-dl {
+    padding: 6px;
+  }
+
+  /* Modals on mobile */
+  .request-modal-overlay {
+    padding: 1rem;
+  }
+
+  .request-modal-content {
+    max-height: 95vh;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: 8px;
   }
-  
-  .date-inputs span {
-    text-align: center;
+
+  .btn-modal-print,
+  .btn-modal-close,
+  .btn-action-pay {
+    width: 100%;
+    justify-content: center;
   }
 }
 /* Payment Modality Modal */

@@ -19,9 +19,44 @@ import { useNavigate } from 'react-router-dom';
 import './AdministrationSidebar.css';
 
 const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSection }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState({ 'suivi-demandes': true });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    processing: 0,
+    validated: 0,
+    to_deliver: 0,
+    appointments: 0
+  });
+
+  // Fetch counts for badges
+  const fetchCounts = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/entity-admin/stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success' && data.data.stats) {
+        setCounts({
+          pending: data.data.stats.pending || 0,
+          processing: data.data.stats.processing || 0,
+          validated: data.data.stats.validated || 0,
+          to_deliver: data.data.stats.to_deliver || 0,
+          appointments: data.data.stats.appointments?.pending || 0
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching sidebar counts:', err);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   // Dynamic modules base on mapping
   const moduleMap = {
@@ -30,8 +65,8 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
       icon: <FileText size={20} />,
       label: 'Immatriculation',
       subItems: [
-        { id: 'reception-demandes', label: 'Nouvelles Demandes' },
-        { id: 'documents-analyse',  label: 'Analyse En Cours' },
+        { id: 'reception-demandes', label: 'Nouvelles Demandes', badge: counts.pending },
+        { id: 'documents-analyse',  label: 'Analyse En Cours', badge: counts.processing },
         { id: 'dossiers-traites',   label: 'Dossiers Traités' },
         { id: 'dossiers-refuses',   label: 'Dossiers Refusés' },
       ]
@@ -41,11 +76,11 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
       icon: <FileText size={20} />,
       label: 'Permis de Conduire',
       subItems: [
-        { id: 'nouvelle-demande-permis', label: 'Nouvelle demande' },
-        { id: 'analyse-en-cours-permis',  label: 'Analyse en cours' },
+        { id: 'nouvelle-demande-permis', label: 'Nouvelle demande', badge: counts.pending },
+        { id: 'analyse-en-cours-permis',  label: 'Analyse en cours', badge: counts.processing },
         { id: 'dossier-traite-permis',   label: 'Dossier traité' },
         { id: 'dossier-refuse-permis',   label: 'Dossier Refusé' },
-        { id: 'paiement-permis',         label: 'Paiement' },
+        { id: 'paiement-permis',         label: 'Paiement', badge: counts.validated },
         ...(user?.role_id === 1 ? [{ id: 'config-categories', label: 'Config Catégories' }] : [])
       ]
     },
@@ -105,14 +140,31 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
 
     if (user?.role_id === 2) {
       names = user?.entity_services || [];
+    } else if (user?.role_id === 3) {
+      names = user?.assigned_services || [];
+    }
+
+    // ENSURE names is an array (it might be a JSON string from the DB)
+    if (typeof names === 'string') {
+        try {
+            names = JSON.parse(names);
+        } catch (e) {
+            console.error("Error parsing user services:", e);
+            names = [];
+        }
+    }
+    
+    if (!Array.isArray(names)) {
+        names = [];
+    }
+
+    if (user?.role_id === 2) {
       // Admins always see Gestion des véhicules
       if (!names.includes('Gestion des véhicules')) {
         names.push('Gestion des véhicules');
       }
     } else if (user?.role_id === 3) {
-      names = user?.assigned_services || [];
-      // Employees should NOT see Gestion des véhicules unless specifically assigned?
-      // User says "administrateur uniquement et les supermadmin"
+      // Employees should NOT see Gestion des véhicules unless specifically assigned
       names = names.filter(n => n !== 'Gestion des véhicules');
     }
     
@@ -160,7 +212,8 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
       id: 'rendez-vous',
       icon: <CalendarCheck size={20} />,
       label: 'Rendez-vous',
-      subItems: []
+      subItems: [],
+      badge: counts.appointments
     },
     {
       id: 'rapport',
@@ -206,6 +259,11 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
         <button className="hamburger-menu" onClick={onToggle} title={isOpen ? 'Menu' : 'Ouvrir'}>
           <Menu size={20} />
         </button>
+        {isOpen && (
+          <div className="sidebar-logo-container">
+             <img src="/images/logo_siaah_white.svg" alt="SIAAH" className="sidebar-logo-img" />
+          </div>
+        )}
       </div>
 
       {/* ── Navigation ──────────────────────── */}
@@ -225,6 +283,9 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
             >
               <span className="nav-icon-container">{item.icon}</span>
               {isOpen && <span className="nav-label-text">{item.label}</span>}
+              {item.badge > 0 && isOpen && !item.subItems.length && (
+                <span className="sidebar-badge">{item.badge}</span>
+              )}
               {isOpen && item.subItems.length > 0 && (
                 <span className="expand-chevron">
                   <ChevronDown

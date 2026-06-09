@@ -24,7 +24,7 @@ const getEntityStats = async (req, res) => {
             });
         }
 
-        const [employees, reqCounts, recentActivity] = await Promise.all([
+        const [employees, reqCounts, recentActivity, appCounts] = await Promise.all([
             pool.query('SELECT COUNT(*) FROM users WHERE office_id = $1 AND role_id = 3', [officeId]),
             pool.query(`
                 SELECT 
@@ -32,7 +32,9 @@ const getEntityStats = async (req, res) => {
                     COUNT(*) FILTER (WHERE status = 'pending') as pending,
                     COUNT(*) FILTER (WHERE status = 'processing') as processing,
                     COUNT(*) FILTER (WHERE status = 'completed') as completed,
-                    COUNT(*) FILTER (WHERE status = 'rejected') as rejected
+                    COUNT(*) FILTER (WHERE status = 'rejected') as rejected,
+                    COUNT(*) FILTER (WHERE status = 'validated' OR status = 'paiement') as validated,
+                    COUNT(*) FILTER (WHERE status = 'to_deliver') as to_deliver
                 FROM service_requests
                 WHERE office_id = $1
             `, [officeId]),
@@ -45,6 +47,15 @@ const getEntityStats = async (req, res) => {
                 WHERE sr.office_id = $1
                 ORDER BY sr.updated_at DESC
                 LIMIT 10
+            `, [officeId]),
+
+            pool.query(`
+                SELECT 
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE status = 'pending') as pending,
+                    COUNT(*) FILTER (WHERE status = 'confirmed') as confirmed
+                FROM appointments
+                WHERE office_id = $1
             `, [officeId])
         ]);
 
@@ -58,7 +69,14 @@ const getEntityStats = async (req, res) => {
                     processing: parseInt(reqCounts.rows[0].processing),
                     accepted: parseInt(reqCounts.rows[0].completed),
                     rejected: parseInt(reqCounts.rows[0].rejected),
-                    processed: parseInt(reqCounts.rows[0].completed) + parseInt(reqCounts.rows[0].rejected)
+                    validated: parseInt(reqCounts.rows[0].validated),
+                    to_deliver: parseInt(reqCounts.rows[0].to_deliver),
+                    processed: parseInt(reqCounts.rows[0].completed) + parseInt(reqCounts.rows[0].rejected),
+                    appointments: {
+                        total: parseInt(appCounts.rows[0].total),
+                        pending: parseInt(appCounts.rows[0].pending),
+                        confirmed: parseInt(appCounts.rows[0].confirmed)
+                    }
                 },
                 recentActivity: recentActivity.rows
             }

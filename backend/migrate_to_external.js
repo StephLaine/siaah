@@ -294,7 +294,7 @@ async function run() {
         const SUPERADMIN_EMAIL    = 'superadmin@siaah.ht';
         const SUPERADMIN_PASSWORD = 'SuperAdmin@2024!';
 
-        const hash = SUPERADMIN_PASSWORD; // mot de passe en clair (pattern du projet)
+        const hash = await bcrypt.hash(SUPERADMIN_PASSWORD, 12);
 
         const roleRes = await client.query(`SELECT id FROM roles WHERE name = 'SuperAdmin' LIMIT 1`);
         if (roleRes.rowCount === 0) throw new Error('Rôle SuperAdmin introuvable');

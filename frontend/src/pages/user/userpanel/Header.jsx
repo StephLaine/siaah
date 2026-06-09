@@ -27,38 +27,66 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+
+  // Mobile bottom-sheet backdrop — true when any dropdown is open
+  const isAnyDropdownOpen = isProfileOpen || isLangOpen || isNotificationsOpen;
 
   const profileRef = useRef(null);
   const langRef = useRef(null);
   const searchRef = useRef(null);
   const notificationsRef = useRef(null);
 
-  const notifications = [
-    {
-      id: 1,
-      title: 'Demande validée',
-      message: 'Votre demande d\'immatriculation a été validée.',
-      time: 'Il y a 10 min',
-      unread: true
-    },
-    {
-      id: 2,
-      title: 'Paiement reçu',
-      message: 'Nous avons bien reçu votre paiement pour le permis.',
-      time: 'Il y a 1 heure',
-      unread: false
-    },
-    {
-      id: 3,
-      title: 'Rendez-vous',
-      message: 'Votre rendez-vous est demain à 9h00.',
-      time: 'Il y a 3 heures',
-      unread: true
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        setNotifications(result.data);
+        setUnreadCount(result.data.filter(n => !n.is_read).length);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
     }
-  ];
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 60000); // Poll every minute
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await fetch(`/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking as read:', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await fetch('/api/notifications/read-all', {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
 
   const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Utilisateur';
 
@@ -126,21 +154,26 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
     navigate(path);
   };
 
+  const closeAllDropdowns = () => {
+    setIsProfileOpen(false);
+    setIsLangOpen(false);
+    setIsNotificationsOpen(false);
+  };
+
   return (
     <div className="header-wrapper">
+      {/* Mobile bottom-sheet blurred backdrop */}
+      {isAnyDropdownOpen && (
+        <div
+          className="mobile-sheet-backdrop"
+          onClick={closeAllDropdowns}
+          aria-hidden="true"
+        />
+      )}
       {/* Top Header */}
       <header className="top-header">
         <div className="header-container">
-          <div className="header-left-side">
-            <button className="mobile-menu-btn" onClick={() => onToggleSidebar && onToggleSidebar()}>
-              <Menu size={24} />
-            </button>
-            <Link to="/user" className="logo">
-              <div className="logo-titles">
-                <span className="logo-text">SIAAH</span>
-              </div>
-            </Link>
-          </div>
+
 
           <div className="search-section" ref={searchRef}>
             <div className="search-bar">
@@ -207,28 +240,38 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
               >
                 <Bell size={20} />
-                <span className="notification-badge">3</span>
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
               </button>
 
               {isNotificationsOpen && (
                 <div className="dropdown-menu notification-dropdown">
                   <div className="dropdown-header-title">
                     <h3>Notifications</h3>
-                    <button className="mark-read-btn">Tout marquer comme lu</button>
+                    <button className="mark-read-btn" onClick={handleMarkAllRead}>Tout marquer comme lu</button>
                   </div>
                   <div className="notification-list">
-                    {notifications.map((notif) => (
-                      <div key={notif.id} className={`notification-item ${notif.unread ? 'unread' : ''}`}>
-                        <div className="notif-content">
-                          <p className="notif-title">{notif.title}</p>
-                          <p className="notif-message">{notif.message}</p>
-                          <span className="notif-time">{notif.time}</span>
+                    {notifications.length === 0 ? (
+                      <div className="empty-notifications">Aucune notification</div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`notification-item ${!notif.is_read ? 'unread' : ''}`}
+                          onClick={() => handleMarkAsRead(notif.id)}
+                        >
+                          <div className="notif-content">
+                            <p className="notif-title">{notif.title}</p>
+                            <p className="notif-message">{notif.message}</p>
+                            <span className="notif-time">{new Date(notif.created_at).toLocaleString('fr-FR')}</span>
+                          </div>
+                          {!notif.is_read && <span className="unread-dot"></span>}
                         </div>
-                        {notif.unread && <span className="unread-dot"></span>}
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
-                  <button className="view-all-notifs">Voir toutes les notifications</button>
+                  <Link to="/user/statut" className="view-all-notifs" onClick={() => setIsNotificationsOpen(false)}>
+                    Voir mes dossiers
+                  </Link>
                 </div>
               )}
             </div>
@@ -297,18 +340,22 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
           >
             <Home className="nav-icon-mobile" size={18} />
             <span className="nav-text-desktop">Accueil</span>
+            <span className="nav-label-mobile">Accueil</span>
           </NavLink>
           <NavLink to="/user/nouvelle-demande" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Briefcase className="nav-icon-mobile" size={18} />
             <span className="nav-text-desktop">Services</span>
+            <span className="nav-label-mobile">Services</span>
           </NavLink>
           <NavLink to="/user/statut" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Layers className="nav-icon-mobile" size={18} />
-            <span className="nav-text-desktop">Mes Dossiers</span>
+            <span className="nav-text-desktop">Dossiers</span>
+            <span className="nav-label-mobile">Dossiers</span>
           </NavLink>
           <NavLink to="/user/paiements" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <CreditCard className="nav-icon-mobile" size={18} />
             <span className="nav-text-desktop">Paiements</span>
+            <span className="nav-label-mobile">Paiements</span>
           </NavLink>
         </div>
       </nav>

@@ -9,10 +9,11 @@ const Footer = () => {
                     {/* Brand & Partners */}
                     <div className="space-y-8 md:col-span-1">
                         <div className="space-y-2">
-                            <h2 className="text-3xl font-black tracking-tight text-white">SIAAH</h2>
-                            <p className="text-[10px] uppercase font-bold tracking-tighter text-slate-400 leading-tight">
-                                société d'immatriculation et d'assurance <br /> des vehicules Haitienne
-                            </p>
+                            <img 
+                                src="/images/logo_siaah_white.svg" 
+                                alt="SIAAH Logo" 
+                                className="h-16 w-auto object-contain opacity-90" 
+                            />
                         </div>
                         <div className="space-y-4 pt-4 border-t border-white/10">
                             <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Nos Partenaires</h3>

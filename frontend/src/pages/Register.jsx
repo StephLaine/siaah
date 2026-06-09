@@ -40,6 +40,9 @@ const Register = () => {
                 {/* Left Side: Register Form */}
                 <div className="max-w-md w-full mx-auto lg:ml-0">
                     <div className="mb-10">
+                        <Link to="/" className="inline-block mb-6">
+                            <img src="/images/logo_siaah_main.svg" alt="SIAAH Logo" className="h-20 w-auto object-contain" />
+                        </Link>
                         <h1 className="text-3xl font-black text-[#1a1a1a] uppercase tracking-tight mb-2">
                             Créer un compte
                         </h1>

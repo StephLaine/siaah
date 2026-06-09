@@ -7,13 +7,25 @@ import { useAuth } from '../../../context/AuthContext';
 
 const Administration = () => {
   const { user } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const [activeSection, setActiveSection] = useState('tableau-de-bord');
   const [activeTab, setActiveTab] = useState('nouvelles-demandes');
 
-  // Any redirection logic can be added here if needed, but employees should see Tableau de Board now.
-
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -25,6 +37,11 @@ const Administration = () => {
   const handleSectionSelect = (sectionId) => {
     setActiveSection(sectionId);
     setSelectedGlobalRequest(null); // Clear search selection when changing sections manually
+
+    // Close sidebar on mobile after selecting section
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
 
     // Switch to appropriate tab based on sidebar selection
     if (sectionId === 'dossiers-traites' || sectionId === 'dossier-traite-permis') {
@@ -55,8 +72,12 @@ const Administration = () => {
   };
 
   return (
-    <div className="administration">
-      <AdministrationHeader onResultClick={handleGlobalSearchSelect} activeSection={activeSection} />
+    <div className={`administration ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+      <AdministrationHeader 
+        onResultClick={handleGlobalSearchSelect} 
+        activeSection={activeSection} 
+        onToggleSidebar={toggleSidebar} 
+      />
       <div className="admin-body">
         <AdministrationSidebar
           isOpen={sidebarOpen}
@@ -64,6 +85,9 @@ const Administration = () => {
           onSectionSelect={handleSectionSelect}
           activeSection={activeSection}
         />
+        {isMobile && sidebarOpen && (
+          <div className="admin-mobile-overlay" onClick={toggleSidebar}></div>
+        )}
         <AdministrationMainContent
           activeTab={activeTab}
           onTabSelect={handleTabSelect}

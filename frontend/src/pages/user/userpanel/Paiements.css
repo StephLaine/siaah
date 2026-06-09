@@ -339,6 +339,23 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .service-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .service-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
   .payment-item {
     flex-direction: column;
     align-items: flex-start;
