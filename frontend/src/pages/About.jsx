@@ -116,7 +116,7 @@ const About = () => {
                             className="lg:w-1/2"
                         >
                             <img
-                                src="/src/assets/images/Liscence.png"
+                                src="images/Liscence.png"
                                 alt="À Propos du SIAAH"
                                 className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
                             />
@@ -353,7 +353,7 @@ const About = () => {
                                 num: '01',
                                 name: 'John Widno Dorcy',
                                 role: 'Concepteur Développeur',
-                                photo: '/src/assets/images/J.jpg',
+                                photo: '/images/J.jpg',
                                 icon: <Code2 className="h-4 w-4" />,
                                 tag: 'Développement',
                                 email: 'j.dorcy@siaah.ht',
@@ -363,7 +363,7 @@ const About = () => {
                                 num: '02',
                                 name: 'Saraï Dieu-Donnée',
                                 role: 'Conceptrice Designer',
-                                photo: '/src/assets/images/D.jpg',
+                                photo: 'images/D.jpg',
                                 icon: <Palette className="h-4 w-4" />,
                                 tag: 'Design & UX',
                                 email: 's.dieudonnee@siaah.ht',
@@ -373,7 +373,7 @@ const About = () => {
                                 num: '03',
                                 name: 'Stéphane Laine',
                                 role: 'Concepteur & Développeur',
-                                photo: '/src/assets/images/S.jpg',
+                                photo: '/images/S.jpg',
                                 icon: <Layers className="h-4 w-4" />,
                                 tag: 'Architecture',
                                 email: 's.laine@siaah.ht',
