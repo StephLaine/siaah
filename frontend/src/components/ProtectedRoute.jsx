@@ -2,18 +2,26 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * ROLE MAP:
- *  1 → Super Admin   → /superadmin
- *  2 → Admin (entité) → /admin
- *  3 → Employé        → /admin
- *  4 → Citoyen/User   → /user
+ * ROLE MAP COMPLET:
+ *  1 → Super Admin            → /superadmin
+ *  2 → Admin (entité)         → /admin
+ *  3 → Employé                → /admin
+ *  4 → Agent Immatriculation  → /admin  (module immat)
+ *  5 → Agent Assurance        → /admin  (module assurances)
+ *  6 → Agent Permis           → /admin  (module permis)
+ *  7 → Agent Routier          → /admin  (module contraventions)
+ *  8 → User/Citoyen           → /user
  */
 const getDefaultRoute = (roleId) => {
     switch (roleId) {
         case 1:  return '/superadmin/dashboard';
-        case 2:  return '/admin/dashboard';
-        case 3:  return '/admin/dashboard';
-        default: return '/user';
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:  return '/admin/dashboard';
+        default: return '/user'; // role_id = 8 ou inconnu
     }
 };
 

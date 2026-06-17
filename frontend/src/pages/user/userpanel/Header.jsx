@@ -32,6 +32,9 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+
+  const searchInputRef = useRef(null);
 
   // Mobile bottom-sheet backdrop — true when any dropdown is open
   const isAnyDropdownOpen = isProfileOpen || isLangOpen || isNotificationsOpen;
@@ -123,6 +126,7 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
       }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowResults(false);
+        setIsSearchExpanded(false);
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
         setIsNotificationsOpen(false);
@@ -172,20 +176,59 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
       )}
       {/* Top Header */}
       <header className="top-header">
-        <div className="header-container">
+        <div className={`header-container ${isSearchExpanded ? 'search-active' : ''}`}>
+          <div className="header-left-side">
+            <button className="mobile-menu-btn" onClick={() => onToggleSidebar && onToggleSidebar()}>
+              <Menu size={40} />
+            </button>
+            <Link to="/user" className="logo">
+              <img src="/images/logo_siaah_white.svg" alt="SIAAH Logo" className="header-logo-img" />
+            </Link>
+          </div>
 
-
-          <div className="search-section" ref={searchRef}>
-            <div className="search-bar">
-              <Search size={18} className="search-icon-header" />
+          <div className={`search-section ${isSearchExpanded ? 'expanded' : 'collapsed'}`} ref={searchRef}>
+            <div className={`search-bar ${isSearchExpanded ? 'expanded' : 'collapsed'}`}>
+              <button 
+                type="button"
+                className="search-icon-btn"
+                onClick={() => {
+                  setIsSearchExpanded(true);
+                  setTimeout(() => searchInputRef.current?.focus(), 100);
+                }}
+                aria-label="Rechercher"
+              >
+                <Search size={18} className="search-icon-header" />
+              </button>
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Rechercher un service, un dossier..."
                 value={searchValue}
                 onChange={handleSearch}
-                onFocus={() => searchValue && searchResults.length > 0 && setShowResults(true)}
+                onFocus={() => {
+                  setIsSearchExpanded(true);
+                  if (searchValue && searchResults.length > 0) {
+                    setShowResults(true);
+                  }
+                }}
               />
-              {showResults && searchResults.length > 0 && (
+              {isSearchExpanded && (
+                <button 
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchValue('');
+                    setSearchResults([]);
+                    setShowResults(false);
+                    setIsSearchExpanded(false);
+                  }}
+                  aria-label="Fermer la recherche"
+                >
+                  <X size={16} />
+                </button>
+              )}
+              {isSearchExpanded && showResults && searchResults.length > 0 && (
                 <div className="search-results-dropdown">
                   {searchResults.map((result, index) => (
                     <div

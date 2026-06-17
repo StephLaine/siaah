@@ -202,18 +202,18 @@ const Navbar = () => {
     return (
         <header className="w-full bg-white font-sans overflow-visible z-50 relative">
             {/* Row 1: Logo and Search/CTA */}
-            <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="container mx-auto px-4 py-2 sm:py-4 flex flex-row items-center justify-between gap-4">
                 {/* Logo Section */}
                 <Link to="/" className="flex items-center no-underline">
                     <img
                         src="/images/logo_siaah_main.svg"
                         alt="SIAAH — Société de l'Immatriculation et de l'Assurance Automobile en Haïti"
-                        className="h-28 w-auto object-contain"
+                        className="h-12 md:h-28 w-auto object-contain"
                     />
                 </Link>
 
                 {/* Search, Connect & Lang Group */}
-                <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
+                <div className="flex items-center gap-2 sm:gap-4 justify-end">
 
                     {/* ── Barre de Recherche Globale ── */}
                     <div ref={searchRef} className="relative hidden md:block">

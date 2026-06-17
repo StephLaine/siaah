@@ -54,12 +54,16 @@ import ServiceSummary from './pages/superadmin/ServiceSummary';
 
 /**
  * ══════════════════════════════════════════════════
- *  ROLE MAPPING
+ *  ROLE MAPPING COMPLET
  * ══════════════════════════════════════════════════
- *  role_id = 1  →  Super Admin   →  /superadmin
- *  role_id = 2  →  Admin (entité)→  /admin
- *  role_id = 3  →  Employé       →  /admin
- *  role_id = 4  →  Citoyen/User  →  /user
+ *  role_id = 1  → Super Admin            → /superadmin
+ *  role_id = 2  → Admin Entité            → /admin
+ *  role_id = 3  → Employé                → /admin  (accès complet entité)
+ *  role_id = 4  → Agent Immatriculation   → /admin  (module immat)
+ *  role_id = 5  → Agent Assurance         → /admin  (module assurances)
+ *  role_id = 6  → Agent Permis            → /admin  (module permis)
+ *  role_id = 7  → Agent Routier           → /admin  (module contraventions)
+ *  role_id = 8  → Utilisateur/Citoyen     → /user
  * ══════════════════════════════════════════════════
  */
 
@@ -70,13 +74,12 @@ import ServiceSummary from './pages/superadmin/ServiceSummary';
 const SmartLoginRedirect = ({ children }) => {
     const { user, token, loading } = useAuth();
 
-    if (loading) return null; // Attendre la résolution du token
+    if (loading) return null;
 
     if (token && user) {
-        if (user.role_id === 1)  return <Navigate to="/superadmin/dashboard" replace />;
-        if (user.role_id === 2)  return <Navigate to="/admin/dashboard" replace />;
-        if (user.role_id === 3)  return <Navigate to="/admin/dashboard" replace />;
-        return <Navigate to="/user" replace />;
+        if (user.role_id === 1) return <Navigate to="/superadmin/dashboard" replace />;
+        if ([2, 3, 4, 5, 6, 7].includes(user.role_id)) return <Navigate to="/admin/dashboard" replace />;
+        return <Navigate to="/user" replace />; // role_id = 8
     }
 
     return children;
@@ -125,13 +128,13 @@ const AppRoutes = () => {
                 </Route>
 
                 {/* ══════════════════════════════════ */}
-                {/*  USER ROUTES — rôle 4 (Citoyen) UNIQUEMENT */}
-                {/*  Les rôles 1, 2, 3 sont redirigés vers leur dashboard */}
+                {/*  USER ROUTES — rôle 8 (Citoyen) UNIQUEMENT */}
+                {/*  Les rôles 1-7 (personnel) sont redirigés vers leur dashboard */}
                 {/* ══════════════════════════════════ */}
                 <Route
                     path="/user"
                     element={
-                        <ProtectedRoute allowedRoles={[4]} >
+                        <ProtectedRoute allowedRoles={[8]} >
                             <UserLayout />
                         </ProtectedRoute>
                     }
@@ -147,14 +150,14 @@ const AppRoutes = () => {
                 </Route>
 
                 {/* ══════════════════════════════════ */}
-                {/*  ADMIN ROUTES — rôles 2 et 3 UNIQUEMENT */}
+                {/*  ADMIN ROUTES — rôles 2, 3 et agents (4-7) */}
                 {/*  role_id=1 (SuperAdmin) → redirigé vers /superadmin */}
-                {/*  role_id=4 (Citoyen)   → redirigé vers /user */}
+                {/*  role_id=8 (Citoyen)   → redirigé vers /user */}
                 {/* ══════════════════════════════════ */}
                 <Route
                     path="/admin"
                     element={
-                        <ProtectedRoute allowedRoles={[2, 3]}>
+                        <ProtectedRoute allowedRoles={[2, 3, 4, 5, 6, 7]}>
                             <AdminLayout />
                         </ProtectedRoute>
                     }

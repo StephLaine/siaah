@@ -130,7 +130,7 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
     let names = [];
     
     if (user?.role_id === 1) {
-      // SuperAdmin see all base modules
+      // SuperAdmin voit tous les modules de base
       return [
         moduleMap['Immatriculation'], 
         moduleMap['Permis de Conduire'], 
@@ -139,12 +139,26 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
     }
 
     if (user?.role_id === 2) {
+      // Admin Entité : modules assignés à son entité
       names = user?.entity_services || [];
     } else if (user?.role_id === 3) {
+      // Employé : modules assignés individuellement
       names = user?.assigned_services || [];
+    } else if (user?.role_id === 4) {
+      // Agent Immatriculation : uniquement le module Immatriculation
+      names = ['Immatriculation'];
+    } else if (user?.role_id === 5) {
+      // Agent Assurance : uniquement le module Assurances
+      names = ['Assurances'];
+    } else if (user?.role_id === 6) {
+      // Agent Permis : uniquement le module Permis de Conduire
+      names = ['Permis de Conduire'];
+    } else if (user?.role_id === 7) {
+      // Agent Routier : uniquement le module Contraventions
+      names = ['Contraventions'];
     }
 
-    // ENSURE names is an array (it might be a JSON string from the DB)
+    // S'assurer que names est un tableau
     if (typeof names === 'string') {
         try {
             names = JSON.parse(names);
@@ -158,17 +172,34 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
         names = [];
     }
 
+    // Normaliser les noms de service de la base de données vers les clés du moduleMap
+    const normalizeServiceName = (name) => {
+        if (!name) return '';
+        const lower = name.toLowerCase().trim();
+        if (lower.includes('immatriculation')) return 'Immatriculation';
+        if (lower.includes('permis')) return 'Permis de Conduire';
+        if (lower.includes('assurance')) return 'Assurances';
+        if (lower.includes('amende') || lower.includes('contravention')) return 'Contraventions';
+        if (lower.includes('code')) return 'Code de la route';
+        if (lower.includes('station')) return 'Station de services';
+        if (lower.includes('accident')) return 'Accidents de la route';
+        if (lower.includes('véhicule') || lower.includes('vehicule')) return 'Gestion des véhicules';
+        return name;
+    };
+
+    names = names.map(normalizeServiceName);
+
     if (user?.role_id === 2) {
-      // Admins always see Gestion des véhicules
-      if (!names.includes('Gestion des véhicules')) {
+      // Les admins voient Gestion des véhicules uniquement s'ils ont le service Immatriculation
+      if (names.includes('Immatriculation') && !names.includes('Gestion des véhicules')) {
         names.push('Gestion des véhicules');
       }
     } else if (user?.role_id === 3) {
-      // Employees should NOT see Gestion des véhicules unless specifically assigned
+      // Les employés ne voient pas Gestion des véhicules sauf si spécifiquement assigné
       names = names.filter(n => n !== 'Gestion des véhicules');
     }
     
-    // Sort names to ensure the requested order: Immatriculation -> Permis -> Gestion Véhicules
+    // Tri par priorité
     const priority = {
         'Immatriculation': 1,
         'Permis de Conduire': 2,
@@ -179,7 +210,6 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
 
     const sortedNames = [...names].sort((a, b) => (priority[a] || 99) - (priority[b] || 99));
     
-    // Map names to module objects
     return sortedNames.map(name => moduleMap[name]).filter(m => !!m);
   };
 
@@ -229,8 +259,9 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
     }
   ];
 
-  // Filtrer selon le rôle (1=SuperAdmin, 2=Admin, 3=Employé)
+  // Filtrer selon le rôle
   const filteredMenuItems = menuItems.filter(item => {
+    // adminOnly : visible uniquement pour les rôles 1 (SuperAdmin) et 2 (Admin Entité)
     if (item.adminOnly && user?.role_id !== 1 && user?.role_id !== 2) return false;
     return true;
   });
@@ -245,10 +276,17 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
   };
 
   const getRoleLabel = (roleId) => {
-    if (roleId === 1) return 'Super Admin';
-    if (roleId === 2) return 'Administrateur';
-    if (roleId === 3) return 'Employé';
-    return 'Utilisateur';
+    const labels = {
+      1: 'Super Admin',
+      2: 'Administrateur',
+      3: 'Employé',
+      4: 'Agent Immatriculation',
+      5: 'Agent Assurance',
+      6: 'Agent Permis',
+      7: 'Agent Routier',
+      8: 'Utilisateur',
+    };
+    return labels[roleId] || 'Utilisateur';
   };
 
   return (

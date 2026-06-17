@@ -17,9 +17,8 @@ const Login = () => {
     // Helper de redirection selon le rôle
     const getHomeByRole = (roleId) => {
         if (roleId === 1) return '/superadmin/dashboard';
-        if (roleId === 2) return '/admin/dashboard';
-        if (roleId === 3) return '/admin/dashboard';
-        return '/user';
+        if ([2, 3, 4, 5, 6, 7].includes(roleId)) return '/admin/dashboard';
+        return '/user'; // role_id = 8 (Citoyen)
     };
 
     // Redirige si déjà connecté (géré aussi par SmartLoginRedirect dans routes)
@@ -43,7 +42,7 @@ const Login = () => {
             // Sécurité : ne pas accepter un 'from' qui appartient à un autre rôle
             const isSafeRedirect = from && from.startsWith(
                 loggedUser.role_id === 1 ? '/superadmin' :
-                    (loggedUser.role_id === 2 || loggedUser.role_id === 3) ? '/admin' :
+                    [2, 3, 4, 5, 6, 7].includes(loggedUser.role_id) ? '/admin' :
                         '/user'
             );
 

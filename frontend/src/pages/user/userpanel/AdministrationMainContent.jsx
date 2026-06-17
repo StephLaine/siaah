@@ -127,20 +127,30 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       
       // Filter requests based on allowed services for employees/admin
       if (fetchedUser.requests && user) {
+        const matchesService = (allowedName, reqType) => {
+          const allowedNorm = allowedName.toLowerCase().trim();
+          const reqNorm = (reqType || '').toLowerCase().trim();
+          if (allowedNorm.includes('immatriculation') && reqNorm.includes('immatriculation')) return true;
+          if (allowedNorm.includes('permis') && reqNorm.includes('permis')) return true;
+          if (allowedNorm.includes('assurance') && reqNorm.includes('assurance')) return true;
+          if ((allowedNorm.includes('amende') || allowedNorm.includes('contravention')) && (reqNorm.includes('amende') || reqNorm.includes('contravention'))) return true;
+          return reqNorm.includes(allowedNorm);
+        };
+
         if (user.role_id === 3) {
           const assigned = Array.isArray(user.assigned_services) 
             ? user.assigned_services 
             : (typeof user.assigned_services === 'string' ? JSON.parse(user.assigned_services || '[]') : []);
           if (assigned.length > 0) {
             fetchedUser.requests = fetchedUser.requests.filter(req => 
-              assigned.some(a => (req.type || '').includes(a))
+              assigned.some(a => matchesService(a, req.type))
             );
           }
         } else if (user.role_id === 2) {
           const entityServices = user.entity_services || [];
           if (entityServices.length > 0) {
             fetchedUser.requests = fetchedUser.requests.filter(req => 
-              entityServices.some(es => (req.type || '').includes(es))
+              entityServices.some(es => matchesService(es, req.type))
             );
           }
         }
@@ -296,7 +306,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     } else if (activeSection.includes('assurance')) {
       filtered = filtered.filter(r => (r.service_name || r.type || '').toLowerCase().includes('assurance'));
     } else if (activeSection.includes('contravention')) {
-      filtered = filtered.filter(r => (r.service_name || r.type || '').toLowerCase().includes('contravention'));
+      filtered = filtered.filter(r => (r.service_name || r.type || '').toLowerCase().includes('contravention') || (r.service_name || r.type || '').toLowerCase().includes('amende'));
     }
 
     if (activeTab === 'dossiers-traites') {
@@ -521,6 +531,12 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const getServiceRequests = () => {
     const service = getActiveService();
     if (!service) return [];
+    if (service === 'contravention') {
+      return requests.filter(r => {
+        const name = (r.service_name || r.type || '').toLowerCase();
+        return name.includes('contravention') || name.includes('amende');
+      });
+    }
     return requests.filter(r => (r.service_name || r.type || '').toLowerCase().includes(service));
   };
 

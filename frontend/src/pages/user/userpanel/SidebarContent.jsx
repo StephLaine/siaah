@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
+import { ChevronDown,
   ArrowRight, Info, CheckCircle2, Shield, FileText,
   Calendar, CreditCard, UserPlus, RefreshCw, AlertTriangle,
   Settings, Eye, XCircle, Car, Plus, FileEdit, Tag
@@ -55,6 +55,18 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
   const mockRequests = [
     { id: 'LI21020002', name: 'Sarah Dieudonne', type: 'Permis de Conduire', date: '16/09/2025', status: 'processing' }
   ];
+
+  // Accordion state for main modules (collapsed by default)
+  const [accordionOpen, setAccordionOpen] = useState({
+    immatriculation: false,
+    mesVehicules: false,
+    permis: false,
+    assurance: false,
+  });
+
+  const toggleAccordion = (key) => {
+    setAccordionOpen(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   useEffect(() => {
     const h = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
@@ -183,17 +195,18 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
     };
 
     let op = null;
+    // Direct mapping for each sectionId to operation keywords
     if (sectionId === 'nouvelle-immatriculation') op = findOp(['Immatriculer'], 'Immatriculation');
     else if (sectionId === 'renouvellement-plaque') op = findOp(['Renouveler'], 'Immatriculation');
     else if (sectionId === 'transfert-vehicule') op = findOp(['Transférer'], 'Immatriculation');
     else if (sectionId === 'remplacement-plaque') op = findOp(['Remplacer'], 'Immatriculation');
-    else if (sectionId === 'nouvelle-demande-permis') op = findOp(['Nouveau'], 'Permis');
-    else if (sectionId === 'remplacer-permis') op = findOp(['Remplacer'], 'Permis');
-    else if (sectionId === 'renouveler-permis') op = findOp(['Renouveler'], 'Permis');
-    else if (sectionId === 'corriger-permis') op = findOp(['Corriger'], 'Permis');
+    else if (sectionId === 'nouvelle-demande-permis') op = findOp(['Nouveau'], 'Permis de conduire');
+    else if (sectionId === 'remplacer-permis') op = findOp(['Remplacer'], 'Permis de conduire');
+    else if (sectionId === 'renouveler-permis') op = findOp(['Renouveler un permis de conduire'], 'Permis de conduire');
+    else if (sectionId === 'corriger-permis') op = findOp(['Corriger'], 'Permis de conduire');
     else if (sectionId === 'nouvelle-assurance') op = findOp(['Demande'], 'Assurance');
     else if (sectionId === 'renouvellement-assurance') op = findOp(['Renouveler'], 'Assurance');
-    else if (sectionId === 'paiement-contravention') op = findOp(['Payer'], 'Contravention');
+    else if (sectionId === 'paiement-contravention') op = findOp(['Payer'], 'Contraventions');
 
     if (!op) return null;
 
@@ -297,6 +310,7 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
             <div className="step"><div className="step-number">2</div><div className="step-content">Choix de l'opération (Nouveau, Renouvellement, etc.).</div></div>
             <div className="step"><div className="step-number">3</div><div className="step-content">Paiement et validation finale du dossier.</div></div>
           </div>
+          <PriceAndDocs sectionId="renouveler-permis" />
         </div>
       </SectionCard>
 
@@ -313,7 +327,6 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
           <ActionButton label="Demander un remplacement" path="/user/nouvelle-demande?type=permis&op=remplacer" />
         </div>
       </SectionCard>
-
       <SectionCard id="renouveler-permis" icon={RefreshCw} title="Renouveler un permis de conduire">
         <div className="operation-detail">
           <PriceAndDocs sectionId="renouveler-permis" />
@@ -408,10 +421,46 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
       return <RequestAnalysis onBack={() => setShowAnalysis(false)} />;
     }
     switch (currentCategory) {
-      case 'immatriculation': return <ImmatriculationContent />;
-      case 'mes-vehicules': return <MesVehicules />; // Added this case
-      case 'permis': return <PermisContent />;
-      case 'assurance': return <AssuranceContent />;
+      case 'immatriculation':
+        return (
+          <div className="sidebar-accordion">
+            <div className="accordion-header" onClick={() => toggleAccordion('immatriculation')}>
+              <h3>Immatriculation</h3>
+              <ChevronDown className={accordionOpen.immatriculation ? 'rotate-180' : ''} size={16} />
+            </div>
+            {accordionOpen.immatriculation && <ImmatriculationContent />}
+          </div>
+        );
+      case 'mes-vehicules':
+        return (
+          <div className="sidebar-accordion">
+            <div className="accordion-header" onClick={() => toggleAccordion('mesVehicules')}>
+              <h3>Mes Véhicules</h3>
+              <ChevronDown className={accordionOpen.mesVehicules ? 'rotate-180' : ''} size={16} />
+            </div>
+            {accordionOpen.mesVehicules && <MesVehicules />}
+          </div>
+        );
+      case 'permis':
+        return (
+          <div className="sidebar-accordion">
+            <div className="accordion-header" onClick={() => toggleAccordion('permis')}>
+              <h3>Permis de Conduire</h3>
+              <ChevronDown className={accordionOpen.permis ? 'rotate-180' : ''} size={16} />
+            </div>
+            {accordionOpen.permis && <PermisContent />}
+          </div>
+        );
+      case 'assurance':
+        return (
+          <div className="sidebar-accordion">
+            <div className="accordion-header" onClick={() => toggleAccordion('assurance')}>
+              <h3>Assurance</h3>
+              <ChevronDown className={accordionOpen.assurance ? 'rotate-180' : ''} size={16} />
+            </div>
+            {accordionOpen.assurance && <AssuranceContent />}
+          </div>
+        );
       case 'contraventions': return <ContraventionsContent />;
       case 'rendez-vous':
         return (

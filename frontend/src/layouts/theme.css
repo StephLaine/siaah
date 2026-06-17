@@ -1,0 +1,30 @@
+:root {
+  --color-primary: #1e40af; /* indigo */
+  --color-accent: #06b6d4;  /* teal */
+  --color-bg-light: #f0f4f8;
+  --color-bg-dark: #0f172a;
+  --color-text-light: #1e293b;
+  --color-text-dark: #e2e8f0;
+  --color-card-bg: rgba(255,255,255,0.12);
+  --color-card-bg-dark: rgba(0,0,0,0.45);
+  --color-link: #60a5fa;
+  --color-link-hover: #93c5fd;
+  --color-danger: #f87171;
+  --color-danger-hover: #fca5a5;
+}
+
+.dark-theme {
+  --color-primary: #7c3aed; /* violet */
+  --color-accent: #38bdf8;  /* sky */
+  --color-bg-light: var(--color-bg-dark);
+  --color-text-light: var(--color-text-dark);
+  --color-card-bg: var(--color-card-bg-dark);
+}
+
+/* Glass card helper */
+.glass-card {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}

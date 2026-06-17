@@ -8,19 +8,23 @@ const upload = require('../middleware/upload.middleware');
  * ADMIN ROUTES
  * ══════════════════════════════════════════════════
  * Accessible par :
- *   role_id = 1 → Super Admin (accès total)
- *   role_id = 2 → Admin Entité (accès à son entité)
- *   role_id = 3 → Employé (accès lecture seule aux stats)
+ *   role_id = 1 → Super Admin         (accès total)
+ *   role_id = 2 → Admin Entité        (accès à son entité)
+ *   role_id = 3 → Employé             (accès lecture/écriture)
+ *   role_id = 4 → Agent Immatriculation (module immat uniquement)
+ *   role_id = 5 → Agent Assurance      (module assurances uniquement)
+ *   role_id = 6 → Agent Permis         (module permis uniquement)
+ *   role_id = 7 → Agent Routier        (module contraventions)
  * ══════════════════════════════════════════════════
  */
 
 // Toutes les routes admin requièrent une authentification
 router.use(authMiddleware);
 
-// Seuls les rôles 1, 2, 3 peuvent accéder à l'interface admin
-router.use(roleMiddleware([1, 2, 3]));
+// Seuls les rôles 1-7 (personnel) peuvent accéder à l'interface admin
+router.use(roleMiddleware([1, 2, 3, 4, 5, 6, 7]));
 
-// Dashboard stats — accessible au staff (1, 2, 3)
+// Dashboard stats — accessible à tout le personnel
 router.get('/stats', c.getStats);
 
 // ─── Entités ─────────────────────────────────────────────────────────────────
@@ -50,16 +54,16 @@ router.post('/operations',    roleMiddleware([1]), c.createOperation);
 router.put('/operations/:id', roleMiddleware([1]), c.updateOperation);
 router.delete('/operations/:id', roleMiddleware([1]), c.deleteOperation);
 
-// ─── Utilisateurs ────────────────────────────────────────────────────────────
+// ─── Utilisateurs ─────────────────────────────────────────────────────────────────────────
 router.get('/users',              roleMiddleware([1, 2]), c.getUsers);
-router.get('/users/:id',          roleMiddleware([1, 2, 3]), c.getUserDetail);
-router.get('/users/:id/comms',    roleMiddleware([1, 2, 3]), c.getUserCommunications);
+router.get('/users/:id',          roleMiddleware([1, 2, 3, 4, 5, 6, 7]), c.getUserDetail);
+router.get('/users/:id/comms',    roleMiddleware([1, 2, 3, 4, 5, 6, 7]), c.getUserCommunications);
 router.get('/roles',              roleMiddleware([1, 2]), c.getRoles);
 router.post('/users',             roleMiddleware([1, 2]), c.createUser);
 router.put('/users/:id',          roleMiddleware([1, 2]), c.updateUser);
-router.put('/users/:id/profile',  roleMiddleware([1, 2, 3]), c.updateUserProfile);  // Permet maj infos personnelles + notes
-router.put('/users/:id/avatar',   roleMiddleware([1, 2, 3]), upload.single('avatar'), c.updateUserAvatar);   // Permet la maj de l'avatar
+router.put('/users/:id/profile',  roleMiddleware([1, 2, 3, 4, 5, 6, 7]), c.updateUserProfile);
+router.put('/users/:id/avatar',   roleMiddleware([1, 2, 3, 4, 5, 6, 7]), upload.single('avatar'), c.updateUserAvatar);
 router.delete('/users/:id',       roleMiddleware([1]),    c.deleteUser);     // SuperAdmin uniquement
-router.get('/search', roleMiddleware([1, 2, 3]), c.globalSearch);
+router.get('/search', roleMiddleware([1, 2, 3, 4, 5, 6, 7]), c.globalSearch);
 
 module.exports = router;

@@ -229,7 +229,7 @@ const StatutDemandes = () => {
         },
         body: JSON.stringify({ 
           requestId: paymentRequest.id, 
-          amount: paymentRequest.price || 2500, // Fallback if price missing
+          amount: (paymentRequest.price !== null && paymentRequest.price !== undefined) ? paymentRequest.price : 2500, // Fallback if price missing
           method: methodKey 
         })
       });
@@ -275,7 +275,7 @@ const StatutDemandes = () => {
           </div>
         </div>
         <div className="card-meta">
-          <span className="card-price">{req.price ? `${parseFloat(req.price).toLocaleString()} HTG` : '2,500 HTG'}</span>
+          <span className="card-price">{(req.price !== null && req.price !== undefined) ? `${parseFloat(req.price).toLocaleString()} HTG` : '2,500 HTG'}</span>
           <span className={`status-pill-pay ${req.payment_status === 'paid' ? 'paid' : 'unpaid'}`}>
             {req.payment_status === 'paid' ? 'Payé' : 'Non Payé'}
           </span>
@@ -470,7 +470,7 @@ const StatutDemandes = () => {
                             </span>
                         </td>
                         <td className="cell-price" style={{ fontWeight: 'bold' }}>
-                            {req.price ? `${parseFloat(req.price).toLocaleString()} HTG` : '2,500 HTG'}
+                            {(req.price !== null && req.price !== undefined) ? `${parseFloat(req.price).toLocaleString()} HTG` : '2,500 HTG'}
                         </td>
                         <td className="cell-payment">
                             <span className={`status-pill-pay ${req.payment_status === 'paid' ? 'paid' : 'unpaid'}`}>
@@ -610,7 +610,7 @@ const StatutDemandes = () => {
                                         </span>
                                       </td>
                                       <td className="cell-price" style={{ fontWeight: 'bold' }}>
-                                        {req.price ? `${parseFloat(req.price).toLocaleString()} HTG` : '2,500 HTG'}
+                                        {(req.price !== null && req.price !== undefined) ? `${parseFloat(req.price).toLocaleString()} HTG` : '2,500 HTG'}
                                       </td>
                                       <td className="cell-payment">
                                         <span className={`status-pill-pay ${req.payment_status === 'paid' ? 'paid' : 'unpaid'}`}>
@@ -720,7 +720,7 @@ const StatutDemandes = () => {
                 </div>
                 <div className="detail-item">
                    <span className="label">Prix</span>
-                   <span className="value" style={{ fontWeight: 'bold' }}>{selectedRequest.price ? `${parseFloat(selectedRequest.price).toLocaleString()} HTG` : '2,500 HTG'}</span>
+                   <span className="value" style={{ fontWeight: 'bold' }}>{(selectedRequest.price !== null && selectedRequest.price !== undefined) ? `${parseFloat(selectedRequest.price).toLocaleString()} HTG` : '2,500 HTG'}</span>
                 </div>
                 <div className="detail-item">
                   <span className="label">Paiement</span>
@@ -779,7 +779,7 @@ const StatutDemandes = () => {
                   </div>
                   <div className="summary-row total">
                     <span>Montant total à payer:</span>
-                    <span className="summary-price">{paymentRequest.price ? `${parseFloat(paymentRequest.price).toLocaleString()} HTG` : '2,500 HTG'}</span>
+                    <span className="summary-price">{(paymentRequest.price !== null && paymentRequest.price !== undefined) ? `${parseFloat(paymentRequest.price).toLocaleString()} HTG` : '2,500 HTG'}</span>
                   </div>
                 </div>
 
@@ -844,7 +844,7 @@ const StatutDemandes = () => {
                       <span>Redirection...</span>
                     </>
                   ) : (
-                    `Confirmer le paiement de ${paymentRequest.price || '2,500'} HTG`
+                    `Confirmer le paiement de ${(paymentRequest.price !== null && paymentRequest.price !== undefined) ? parseFloat(paymentRequest.price).toLocaleString() : '2,500'} HTG`
                   )}
                 </button>
               </div>

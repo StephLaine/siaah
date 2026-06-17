@@ -131,24 +131,152 @@
   margin: 0;
 }
 
-/* Cards Grid */
-.cards-grid {
+/* Container holds the cards / accordions */
+.mobile-extra-container {
   display: grid;
   grid-template-columns: 1fr 1fr 2fr;
   grid-template-rows: auto auto;
   gap: 1rem;
-  height: auto;
 }
 
-/* Accident card spans both rows */
-.accidents-card {
-  grid-row: 1 / 3;
-  grid-column: 3;
+@media (max-width: 1200px) {
+  .mobile-extra-container {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
 }
 
-/* Transport card spans 2 columns */
-.transport-card {
-  grid-column: 1 / 3;
+/* Grid layout on desktop/tablet for wrappers */
+@media (min-width: 769px) {
+  .accordion-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Make sure card inside body fills height */
+  .accordion-card-body {
+    display: block !important;
+    height: 100%;
+  }
+  .accordion-card-body > .card {
+    height: 100%;
+  }
+
+  /* Hide toggle header on desktop */
+  .accordion-card-header {
+    display: none !important;
+  }
+}
+
+/* Large screens only: min-width 1201px */
+@media (min-width: 1201px) {
+  /* Accident card wrapper spans both rows on desktop */
+  .accordion-card-wrapper.accidents-wrapper {
+    grid-row: 1 / 3;
+    grid-column: 3;
+  }
+
+  /* Transport card wrapper spans 2 columns on desktop */
+  .accordion-card-wrapper.transport-wrapper {
+    grid-column: 1 / 3;
+  }
+}
+
+/* Medium screens only: 769px to 1200px */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .accordion-card-wrapper.accidents-wrapper {
+    grid-column: span 2;
+    grid-row: auto;
+  }
+
+  .accordion-card-wrapper.transport-wrapper {
+    grid-column: span 2;
+  }
+}
+
+/* Mobile specific accordion styles */
+@media (max-width: 768px) {
+  .mobile-extra-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .accordion-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: white;
+    color: #1e3a8a;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .accordion-card-header:hover {
+    background-color: #f9fafb;
+    border-color: #3b82f6;
+  }
+
+  .accordion-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .accordion-icon-left {
+    color: #3b82f6;
+  }
+
+  .accordion-chevron {
+    transition: transform 0.2s ease;
+    color: #9ca3af;
+  }
+
+  .accordion-card-wrapper.is-open .accordion-chevron {
+    transform: rotate(180deg);
+    color: #3b82f6;
+  }
+
+  .accordion-card-wrapper.is-open .accordion-card-header {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+  }
+
+  .accordion-card-body {
+    display: none;
+    border: 1px solid #3b82f6;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .accordion-card-wrapper.is-open .accordion-card-body {
+    display: block;
+  }
+
+  /* Style the cards when nested inside the accordion body on mobile */
+  .accordion-card-body > .card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .accordion-card-body > .card > .card-header {
+    display: none; /* Hide internal card header since accordion header is visible */
+  }
 }
 
 .card {
@@ -415,12 +543,9 @@
     padding: 0.75rem;
   }
 
-  .org-info {
-    flex-direction: column;
-    text-align: center;
-    padding: 0.75rem;
-    gap: 0.75rem;
-  }
+.org-info {
+  display: none;
+}
 
   .org-center {
     margin: 0;
@@ -432,10 +557,8 @@
   }
 
   .cards-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: 0.75rem;
-  }
+  display: none;
+}
 
   .accidents-card,
   .transport-card {

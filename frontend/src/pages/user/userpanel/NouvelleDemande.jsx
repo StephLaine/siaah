@@ -177,7 +177,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
     const isImmatriculation = (id) => getServiceName(id).includes('immatriculation');
     const isPermis = (id) => getServiceName(id).includes('permis');
     const isAssurance = (id) => getServiceName(id).includes('assurance');
-    const isContravention = (id) => getServiceName(id).includes('contravention') || getServiceName(id).includes('infraction');
+    const isContravention = (id) => getServiceName(id).includes('contravention') || getServiceName(id).includes('infraction') || getServiceName(id).includes('amende');
 
 
     React.useEffect(() => {
@@ -412,6 +412,12 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
     const getPriceForService = (serviceId) => {
         const svc = services.find(s => s.id === serviceId);
         if (!svc) return 2500;
+        if (selectedOperation) {
+            const op = (svc.operations || []).find(o => String(o.id) === String(selectedOperation));
+            if (op) {
+                return Number(op.price || 0);
+            }
+        }
         return (uiMetadata[svc.name] || {}).price || 2500;
     };
 
@@ -1755,7 +1761,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
 
                                 <div className="price-tag-big">
                                     <span className="p-short">Total à régler :</span>
-                                    <span className="p-amount">{getPriceForService(selectedService)} HTG</span>
+                                    <span className="p-amount">{Number(getPriceForService(selectedService)).toLocaleString()} HTG</span>
                                 </div>
 
                                 <div className="decision-buttons">
@@ -1832,7 +1838,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                         }
                                     }}
                                 >
-                                    Confirmer le paiement de {getPriceForService(selectedService)} HTG
+                                    Confirmer le paiement de {Number(getPriceForService(selectedService)).toLocaleString()} HTG
                                 </button>
                             </div>
                         ) : null}

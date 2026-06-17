@@ -288,12 +288,15 @@ const getServices = async (req, res) => {
 
 const createService = async (req, res) => {
     const { name, description, categorie, actif = true, entity_ids = [], required_documents = [], operations = [] } = req.body;
+    // Default public for core services
+    const corePublicNames = ['Immatriculation', 'Permis de conduire', 'Assurance', 'Contravention'];
+    const is_public = corePublicNames.includes(name) ? true : (req.body.is_public || false);
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
         const svc = await client.query(
-            'INSERT INTO services (name, description, categorie, actif, required_documents) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-            [name, description, categorie, actif, JSON.stringify(required_documents)]
+            'INSERT INTO services (name, description, categorie, actif, is_public, required_documents) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+            [name, description, categorie, actif, is_public, JSON.stringify(required_documents)]
         );
         const sid = svc.rows[0].id;
         
@@ -324,13 +327,13 @@ const createService = async (req, res) => {
 
 const updateService = async (req, res) => {
     const { id } = req.params;
-    const { name, description, categorie, actif, entity_ids, required_documents, operations } = req.body;
+    const { name, description, categorie, actif, is_public = false, entity_ids, required_documents, operations } = req.body;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
         
-        let updateQuery = 'UPDATE services SET name=$1, description=$2, categorie=$3, actif=$4';
-        let params = [name, description, categorie, actif];
+        let updateQuery = 'UPDATE services SET name=$1, description=$2, categorie=$3, actif=$4, is_public=$5';
+        let params = [name, description, categorie, actif, is_public];
         
         if (required_documents !== undefined) {
           updateQuery += ', required_documents=$' + (params.length + 1);

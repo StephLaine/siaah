@@ -3,15 +3,32 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import {
     LayoutDashboard, Building2, MapPin, Users, ChevronLeft,
-    ChevronRight, LogOut, Menu, ShieldCheck, Bell, Settings, Layers
+    ChevronRight, LogOut, Menu, ShieldCheck, Bell, Settings, Layers, Sun, Moon
 } from 'lucide-react';
 
 import './SuperAdminLayout.css';
+import './theme.css';
 
 const SuperAdminLayout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+    // Apply theme class to html element
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark-theme');
+        } else {
+            root.classList.remove('dark-theme');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    };
+
     // On mobile start closed, on desktop start open
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -47,10 +64,10 @@ const SuperAdminLayout = () => {
         <div className={`superadmin-app ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
             {/* Sidebar */}
             <aside className="sa-sidebar">
-                <div className="sa-sidebar-header">
+                <div className="sa-sidebar-header glass-card">
                     <div className="sa-logo">
-                        <img src="/images/logo_siaah_white.svg" alt="SIAAH" className="sa-logo-img-header" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
-                        {sidebarOpen && <div className="sa-logo-text"><span>SIAAH</span><small>Super Admin</small></div>}
+                        <img src="/images/logo_siaah_white.svg" alt="SIAAH" className="sa-logo-img-header" style={{ height: '75px', width: 'auto', objectFit: 'contain' }} />
+
                     </div>
                     <button className="sa-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
                         {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
@@ -80,7 +97,7 @@ const SuperAdminLayout = () => {
                     ))}
                 </nav>
 
-                <div className="sa-sidebar-footer">
+                <div className="sa-sidebar-footer glass-card">
                     <button className="sa-logout-btn" onClick={handleLogout} title="Déconnexion">
                         <LogOut size={18} />
                         {sidebarOpen && <span>Déconnexion</span>}
@@ -106,8 +123,11 @@ const SuperAdminLayout = () => {
                         </div>
                     </div>
                     <div className="sa-header-right">
-                        <button className="sa-header-icon-btn"><Bell size={18} /></button>
-                        <button className="sa-header-icon-btn"><Settings size={18} /></button>
+                        <button className="sa-header-icon-btn" aria-label="Toggle Theme" onClick={toggleTheme}>
+                            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                        </button>
+                        <button className="sa-header-icon-btn" aria-label="Notifications"><Bell size={18} /></button>
+                        <button className="sa-header-icon-btn" aria-label="Settings"><Settings size={18} /></button>
                         <div className="sa-user-badge">
                             <div className="sa-user-avatar">SA</div>
                             <div className="sa-user-info">

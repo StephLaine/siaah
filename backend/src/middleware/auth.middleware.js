@@ -6,10 +6,14 @@ const jwt = require('jsonwebtoken');
  * ══════════════════════════════════════════════════
  *
  *  ROLE MAPPING:
- *    role_id = 1  →  Super Admin   (MEF)
- *    role_id = 2  →  Admin Entité  (chef d'entité)
- *    role_id = 3  →  Employé       (agent de bureau)
- *    role_id = 4  →  Citoyen/User  (public)
+ *    role_id = 1  →  Super Admin            (MEF — accès total)
+ *    role_id = 2  →  Admin Entité           (chef d'entité)
+ *    role_id = 3  →  Employé               (accès complet à son entité)
+ *    role_id = 4  →  Agent Immatriculation  (module immatriculation)
+ *    role_id = 5  →  Agent Assurance        (module assurances)
+ *    role_id = 6  →  Agent Permis           (module permis de conduire)
+ *    role_id = 7  →  Agent Routier          (module contraventions/routier)
+ *    role_id = 8  →  User/Citoyen           (espace citoyen uniquement)
  */
 
 /**
@@ -84,10 +88,13 @@ const roleMiddleware = (roles) => {
 /**
  * Raccourcis sémantiques pour les vérifications de rôle les plus courantes.
  */
-const isSuperAdmin  = roleMiddleware([1]);
-const isAdmin       = roleMiddleware([1, 2]);
-const isStaff       = roleMiddleware([1, 2, 3]);
-const isUser        = roleMiddleware([4]);
+// Raccourcis sémantiques
+const isSuperAdmin    = roleMiddleware([1]);
+const isAdmin         = roleMiddleware([1, 2]);
+const isStaff         = roleMiddleware([1, 2, 3]);
+const isAgent         = roleMiddleware([4, 5, 6, 7]);         // agents spécialisés
+const isStaffOrAgent  = roleMiddleware([1, 2, 3, 4, 5, 6, 7]); // tout le personnel
+const isUser          = roleMiddleware([8]);                   // citoyens
 
 module.exports = {
     authMiddleware,
@@ -96,5 +103,7 @@ module.exports = {
     isSuperAdmin,
     isAdmin,
     isStaff,
+    isAgent,
+    isStaffOrAgent,
     isUser,
 };

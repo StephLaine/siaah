@@ -4,18 +4,25 @@ const { sendWelcomeEmail } = require('../utils/email.service');
 const bcrypt = require('bcryptjs');
 
 const register = async (req, res) => {
-    const { first_name, last_name, email, password, nif, role_id, office_id } = req.body;
+    // We explicitly extract first_name, last_name, email, password, and nif.
+    // Any passed role_id or office_id is ignored to prevent privilege escalation.
+    const { first_name, last_name, email, password, nif } = req.body;
 
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Fetch the 'User' role ID dynamically to ensure robust role mapping
+        const roleRes = await pool.query("SELECT id FROM roles WHERE name = 'User' OR name = 'USER' LIMIT 1");
+        const defaultRoleId = roleRes.rows[0]?.id || 8;
+
         const result = await pool.query(
             'INSERT INTO users (first_name, last_name, email, password, nif, role_id, office_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-            [first_name, last_name, email, hashedPassword, nif, role_id || 4, office_id || null]
+            [first_name, last_name, email, hashedPassword, nif, defaultRoleId, null]
         );
 
-        const user = { id: result.rows[0].id, first_name, last_name, email, role_id: role_id || 4, office_id: office_id || null };
+        // role_id defaultRoleId = User/Citoyen par défaut pour les inscriptions publiques
+        const user = { id: result.rows[0].id, first_name, last_name, email, role_id: defaultRoleId, office_id: null };
         const token = generateToken(user);
 
         // Send welcome email asynchronously
@@ -53,9 +60,11 @@ const login = async (req, res) => {
 
         const token = generateToken(user);
 
-        // Fetch entity services if user is an admin
+        // Récupérer les services selon le rôle
         let entityServices = [];
-        if (user.role_id === 2 && user.office_id) {
+
+        if ((user.role_id === 2 || user.role_id === 3) && user.office_id) {
+            // Admin et Employé : services de leur bureau/entité
             const officeRes = await pool.query('SELECT entity_id FROM offices WHERE id = $1', [user.office_id]);
             const entityId = officeRes.rows[0]?.entity_id;
             if (entityId) {
@@ -66,6 +75,18 @@ const login = async (req, res) => {
                 `, [entityId]);
                 entityServices = servicesRes.rows.map(r => r.name);
             }
+        } else if (user.role_id === 4) {
+            // Agent Immatriculation : module immatriculation uniquement
+            entityServices = ['Immatriculation'];
+        } else if (user.role_id === 5) {
+            // Agent Assurance : module assurances uniquement
+            entityServices = ['Assurances'];
+        } else if (user.role_id === 6) {
+            // Agent Permis : module permis uniquement
+            entityServices = ['Permis de Conduire'];
+        } else if (user.role_id === 7) {
+            // Agent Routier : module contraventions uniquement
+            entityServices = ['Contraventions'];
         }
 
         res.status(200).json({ status: 'success', data: { user: { ...user, entity_services: entityServices }, token } });
@@ -90,15 +111,23 @@ const getProfile = async (req, res) => {
 
         if (!user) return res.status(404).json({ status: 'error', message: 'Utilisateur non trouvé' });
 
-        // Fetch entity services if user is an admin
+        // Récupérer les services selon le rôle
         let entityServices = [];
-        if (user.role_id === 2 && user.entity_id) {
+        if ((user.role_id === 2 || user.role_id === 3) && user.entity_id) {
             const servicesRes = await pool.query(`
                 SELECT s.name FROM services s
                 JOIN entity_services es ON es.service_id = s.id
                 WHERE es.entity_id = $1
             `, [user.entity_id]);
             entityServices = servicesRes.rows.map(r => r.name);
+        } else if (user.role_id === 4) {
+            entityServices = ['Immatriculation'];
+        } else if (user.role_id === 5) {
+            entityServices = ['Assurances'];
+        } else if (user.role_id === 6) {
+            entityServices = ['Permis de Conduire'];
+        } else if (user.role_id === 7) {
+            entityServices = ['Contraventions'];
         }
 
         res.status(200).json({ status: 'success', data: { ...user, entity_services: entityServices } });

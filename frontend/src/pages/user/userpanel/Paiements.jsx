@@ -59,7 +59,7 @@ const Paiements = () => {
       name: 'Contraventions',
       icon: <Ticket size={32} />,
       count: 0,
-      description: 'Paiement des amendes'
+      description: 'Paiement des contraventions'
     }
   ];
 

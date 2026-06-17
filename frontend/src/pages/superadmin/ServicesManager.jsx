@@ -7,7 +7,28 @@ import {
 } from 'lucide-react';
 import './SuperAdmin.css';
 
+// Default operations for specific service categories
+const DEFAULT_OPERATIONS = {
+    'Permis de conduire': [
+        { name: 'Nouveau permis', actif: true, required_documents: [], price: 0 },
+        { name: 'Renouveler un permis de conduire', actif: true, required_documents: [], price: 0 },
+        { name: 'Corriger un permis', actif: true, required_documents: [], price: 0 },
+        { name: 'Remplacer un permis', actif: true, required_documents: [], price: 0 }
+    ],
+    'Immatriculation': [
+        { name: 'Immatriculer un véhicule', actif: true, required_documents: [], price: 0 },
+        { name: "Renouveler une plaque d'immatriculation", actif: true, required_documents: [], price: 0 },
+        { name: 'Transférer un Véhicule', actif: true, required_documents: [], price: 0 },
+        { name: 'Remplacer une Plaque', actif: true, required_documents: [], price: 0 }
+    ],
+    'Assurance': [
+        { name: "Faire une Demande d'Assurance", actif: true, required_documents: [], price: 0 },
+        { name: 'Renouveler une Assurance', actif: true, required_documents: [], price: 0 }
+    ]
+};
+
 const CATEGORIES = [
+    'Permis de conduire',
     'Immatriculation', 'Paiement', 'Impôts', 'Licences', 'Enregistrement',
     'Certificats', 'Déclarations', 'Timbres', 'Assurance', 'Sinistres',
     'Circulation', 'Accidents', 'Réglementation', 'Contrôle', 'Prévention', 
@@ -15,7 +36,7 @@ const CATEGORIES = [
 ];
 
 const EMPTY_FORM = {
-    name: '', description: '', categorie: '', actif: true, entity_ids: [], required_documents: [], operations: []
+    name: '', description: '', categorie: '', actif: true, is_public: false, entity_ids: [], required_documents: [], operations: []
 };
 
 const FormSection = ({ icon: Icon, title, children }) => (
@@ -103,24 +124,28 @@ const ServicesManager = () => {
 
     const openAdd = () => {
         setEditService(null);
+        // Initialize with empty form then set default category to trigger defaults
         setForm(EMPTY_FORM);
+        // Pre-select first category (Permis de conduire) to auto‑populate operations
+        setForm(p => ({ ...p, categorie: CATEGORIES[0] }));
         setShowModal(true);
     };
 
     const openEdit = (s) => {
-        setEditService(s);
-        setForm({
-            id: s.id,
-            name: s.name,
-            description: s.description || '',
-            categorie: s.categorie || '',
-            actif: s.actif !== false,
-            entity_ids: (s.entities || []).map(e => e.id),
-            required_documents: s.required_documents || [],
-            operations: s.operations || []
-        });
-        setShowModal(true);
-    };
+    setEditService(s);
+    setForm({
+        id: s.id,
+        name: s.name,
+        description: s.description || '',
+        categorie: s.categorie || '',
+        actif: s.actif !== false,
+        is_public: s.is_public !== undefined ? s.is_public : false,
+        entity_ids: (s.entities || []).map(e => e.id),
+        required_documents: s.required_documents || [],
+        operations: s.operations || []
+    });
+    setShowModal(true);
+};;
 
     const closeModal = () => { setShowModal(false); setEditService(null); };
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -138,6 +163,20 @@ const ServicesManager = () => {
     const toggleAccordion = (id) => {
         setExpandedEntity(prev => prev === id ? null : id);
     };
+
+    // Auto‑populate default operations and public flag for predefined service categories when creating a new service
+    useEffect(() => {
+        if (!editService && form.categorie && form.operations.length === 0) {
+            const defaults = DEFAULT_OPERATIONS[form.categorie];
+            const publicCategories = ['Immatriculation', 'Permis de conduire', 'Assurance', 'Contravention'];
+            const isPublic = publicCategories.includes(form.categorie);
+            setForm(p => ({
+                ...p,
+                ...(defaults ? { operations: defaults } : {}),
+                is_public: isPublic
+            }));
+        }
+    }, [form.categorie, editService]);
 
     const [newDocName, setNewDocName] = useState('');
     const [newDocRequired, setNewDocRequired] = useState(true);
@@ -392,6 +431,9 @@ const ServicesManager = () => {
                                                             <span className={`sa-badge ${svc.actif !== false ? 'sa-badge-green' : 'sa-badge-gray'}`}>
                                                                 {svc.actif !== false ? 'Actif' : 'Inactif'}
                                                             </span>
+                                                            <span className={`sa-badge ${svc.is_public ? 'sa-badge-blue' : 'sa-badge-gray'}`}>
+                                                                {svc.is_public ? 'Public' : 'Privé'}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -434,6 +476,15 @@ const ServicesManager = () => {
                                             onClick={() => setF('actif', !form.actif)}
                                         >
                                             {form.actif ? <><ToggleRight size={20} /> Actif</> : <><ToggleLeft size={20} /> Inactif</>}
+                                        </button>
+                                    </Field>
+                                    <Field label="Public">
+                                        <button
+                                            type="button"
+                                            className={`sa-toggle-btn-field ${form.is_public ? 'active' : ''}`}
+                                            onClick={() => setF('is_public', !form.is_public)}
+                                        >
+                                            {form.is_public ? <><ToggleRight size={20} /> Public</> : <><ToggleLeft size={20} /> Privé</>}
                                         </button>
                                     </Field>
                                 </div>

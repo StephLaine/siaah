@@ -112,14 +112,26 @@ const createRequest = async (req, res) => {
 const getRequestById = async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query(
-            'SELECT * FROM service_requests WHERE id = $1 AND user_id = $2',
-            [id, req.user.id]
-        );
+    const sql = `
+            SELECT r.*, so.detailed_description, so.price_htg
+            FROM service_requests r
+            LEFT JOIN service_operations so ON (r.details->>'operationId')::int = so.id
+            WHERE r.id = $1 AND r.user_id = $2`;
+        const result = await pool.query(sql, [id, req.user.id]);
         if (result.rows.length === 0) {
             return res.status(404).json({ status: 'error', message: 'Request not found' });
         }
-        res.status(200).json({ status: 'success', data: result.rows[0] });
+        const row = result.rows[0];
+        // Merge operation fields into details if missing
+        if (row.detailed_description && (!row.details || !row.details.detailed_description)) {
+            row.details = { ...(row.details || {}), detailed_description: row.detailed_description };
+        }
+        if (row.price_htg != null && (!row.details || row.details.price_htg == null)) {
+            row.details = { ...(row.details || {}), price_htg: row.price_htg };
+        }
+        // Remove extra columns before sending
+        const { detailed_description, price_htg, ...cleanRow } = row;
+        res.status(200).json({ status: 'success', data: cleanRow });
     } catch (err) {
         console.error('Error fetching request:', err);
         res.status(500).json({ status: 'error', message: err.message });
@@ -332,9 +344,9 @@ const searchRequests = async (req, res) => {
 const getServices = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT s.id, s.name, s.required_documents,
+            SELECT s.id, s.name, s.required_documents, s.is_public,
                    COALESCE((SELECT json_agg(op ORDER BY op.name) FROM service_operations op WHERE op.service_id = s.id AND op.actif = true), '[]') as operations
-            FROM services s WHERE actif = true ORDER BY name ASC
+            FROM services s WHERE actif = true AND is_public = true ORDER BY name ASC
         `);
         res.json({ status: 'success', data: result.rows });
     } catch (err) {

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS services (
     description TEXT,
     categorie   VARCHAR(100),
     actif       BOOLEAN DEFAULT TRUE,
+    is_public   BOOLEAN DEFAULT FALSE,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -153,6 +154,14 @@ INSERT INTO services (name, description, categorie) VALUES
     ('Indemnisation des victimes d''accidents', 'Procédure d''indemnisation des victimes d''accidents de la route', 'Sinistres'),
     ('Attestation d''assurance', 'Délivrance de l''attestation prouvant la couverture', 'Certificats')
 ON CONFLICT DO NOTHING;
+
+-- Ensure core services are public by default
+UPDATE services SET is_public = true WHERE name IN (
+    'Immatriculation fiscale (NIF)',
+    'Permis de conduire',
+    'Assurance obligatoire des véhicules',
+    'Contravention'
+);
 
 -- DCPR Services
 INSERT INTO services (name, description, categorie) VALUES

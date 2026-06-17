@@ -46,7 +46,15 @@ const MesRendezVous = () => {
         const allowed = getAllowedServices();
         if (allowed && allowed.length > 0) {
           rows = rows.filter(a =>
-            allowed.some(s => (a.service || '').toLowerCase().includes(s.toLowerCase()))
+            allowed.some(s => {
+              const sNorm = s.toLowerCase().trim();
+              const aNorm = (a.service || '').toLowerCase().trim();
+              if (sNorm.includes('immatriculation') && aNorm.includes('immatriculation')) return true;
+              if (sNorm.includes('permis') && aNorm.includes('permis')) return true;
+              if (sNorm.includes('assurance') && aNorm.includes('assurance')) return true;
+              if ((sNorm.includes('amende') || sNorm.includes('contravention')) && (aNorm.includes('amende') || aNorm.includes('contravention'))) return true;
+              return aNorm.includes(sNorm);
+            })
           );
         }
         setAppointments(rows);

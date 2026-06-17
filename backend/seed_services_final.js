@@ -11,10 +11,10 @@ const client = new Client({
 });
 
 const SERVICES = [
-    { name: 'Immatriculation', categorie: 'OAVCT', desc: 'Service d''immatriculation de véhicules' },
+    { name: 'Immatriculation', categorie: 'OAVCT', desc: "Service d'immatriculation de véhicules" },
     { name: 'Permis de conduire', categorie: 'DCPR', desc: 'Service des permis de conduire' },
     { name: 'Assurance OAVCT', categorie: 'OAVCT', desc: 'Assurance contre tiers' },
-    { name: 'Paiement d''Amendes', categorie: 'DCPR', desc: 'Gestion des amendes et contraventions' },
+    { name: "Contraventions", categorie: 'DCPR', desc: 'Gestion des amendes et contraventions' },
     { name: 'Quitus Fiscal', categorie: 'DGI', desc: 'Service des impôts' },
     { name: 'Déclaration de revenus', categorie: 'DGI', desc: 'Service des impôts' }
 ];

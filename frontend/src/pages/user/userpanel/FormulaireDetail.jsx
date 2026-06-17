@@ -2,7 +2,8 @@ import React from 'react';
 import {
   X, User, Phone, Mail, MapPin, Calendar, Car,
   FileText, ShieldCheck, AlertTriangle, Hash, Flag,
-  Printer, CheckCircle2, XCircle, Building2
+  Printer, CheckCircle2, XCircle, Building2,
+  Info
 } from 'lucide-react';
 import './FormulaireDetail.css';
 
@@ -171,6 +172,14 @@ const FormulaireDetail = ({ requestData = {}, onClose, onValidate, onReject }) =
               </div>
             </Section>
           )}
+
+          {/* Operation Details Section */}
+          <Section icon={Info} title="Détails et procédures" color="#4b5563">
+            <div className="fd-grid">
+              <Field label="Description détaillée" value={details.detailed_description || "La procédure détaillée pour ce service sera bientôt disponible."} fullWidth />
+              <Field label="Prix du service (HTG)" value={`${details.price_htg ?? requestData.price ?? 0} HTG`} />
+            </div>
+          </Section>
 
           {/* Documents submitted */}
           {(details.submittedDocuments || []).length > 0 && (

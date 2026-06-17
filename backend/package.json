@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "db:reset": "node migrations/run_migrations.js && node seeders/001_default_services_and_operations.js",
     "migrate": "node src/config/migrate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
