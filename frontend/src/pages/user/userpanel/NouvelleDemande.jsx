@@ -925,7 +925,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                                 setExpandedPersonal(!expandedPersonal);
                                                             }}
                                                         >
-                                                            {expandedPersonal ? <><ChevronUp size={18} /> Réduire</> : <><Edit3 size={18} /> Modifier</>}
+                                                            {expandedPersonal ? <><ChevronUp size={18} /> <span className="toggle-text">Réduire</span></> : <><Edit3 size={18} /> <span className="toggle-text">Modifier</span></>}
                                                         </button>
                                                     )}
                                                 </div>

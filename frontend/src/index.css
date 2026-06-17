@@ -15,6 +15,23 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ── Fluid type scale (mobile → desktop) ─────────────────────────────────
+     clamp(min, preferred, max)
+     min  : smallest screens  (~320px)
+     pref : scales linearly with viewport width
+     max  : largest screens   (~1440px)
+  ──────────────────────────────────────────────────────────────────────── */
+  --text-xs:   clamp(0.65rem,  1.5vw,  0.75rem);
+  --text-sm:   clamp(0.75rem,  2vw,    0.875rem);
+  --text-base: clamp(0.875rem, 2.5vw,  1rem);
+  --text-lg:   clamp(1rem,     3vw,    1.125rem);
+  --text-xl:   clamp(1.05rem,  3.5vw,  1.25rem);
+  --text-2xl:  clamp(1.15rem,  4vw,    1.5rem);
+  --text-3xl:  clamp(1.4rem,   5vw,    1.875rem);
+  --text-4xl:  clamp(1.6rem,   6vw,    2.25rem);
+  --text-5xl:  clamp(1.9rem,   7vw,    3rem);
+  --text-6xl:  clamp(2.2rem,   8vw,    3.75rem);
 }
 
 body {
@@ -22,6 +39,65 @@ body {
   padding: 0;
   min-width: 320px;
   overflow-x: hidden;
+  font-size: var(--text-base);
+}
+
+/* ── Apply fluid scale to native heading tags ─────────────────────────── */
+h1 { font-size: var(--text-5xl); line-height: 1.1; }
+h2 { font-size: var(--text-4xl); line-height: 1.2; }
+h3 { font-size: var(--text-3xl); line-height: 1.25; }
+h4 { font-size: var(--text-2xl); line-height: 1.3; }
+h5 { font-size: var(--text-xl);  line-height: 1.35; }
+h6 { font-size: var(--text-lg);  line-height: 1.4; }
+p  { font-size: var(--text-base); }
+
+/* ── Tailwind utility class overrides → fluid versions ────────────────── */
+/* Keeps Tailwind class names working but makes them viewport-aware       */
+.text-xs   { font-size: var(--text-xs)   !important; }
+.text-sm   { font-size: var(--text-sm)   !important; }
+.text-base { font-size: var(--text-base) !important; }
+.text-lg   { font-size: var(--text-lg)   !important; }
+.text-xl   { font-size: var(--text-xl)   !important; }
+.text-2xl  { font-size: var(--text-2xl)  !important; }
+.text-3xl  { font-size: var(--text-3xl)  !important; }
+.text-4xl  { font-size: var(--text-4xl)  !important; }
+.text-5xl  { font-size: var(--text-5xl)  !important; }
+.text-6xl  { font-size: var(--text-6xl)  !important; }
+
+/* Responsive overrides for md: and lg: prefixed classes aren't processed
+   via CSS vars, so we add explicit breakpoint rules for the largest sizes */
+@media (max-width: 640px) {
+  /* Section titles & hero headings */
+  .text-4xl, .md\:text-4xl, .lg\:text-4xl { font-size: var(--text-3xl) !important; }
+  .text-5xl, .md\:text-5xl, .lg\:text-5xl { font-size: var(--text-4xl) !important; }
+  .text-6xl, .md\:text-6xl, .lg\:text-6xl { font-size: var(--text-5xl) !important; }
+
+  /* Stat / counter values */
+  .text-4xl.font-black { font-size: clamp(1.5rem, 7vw, 2rem) !important; }
+
+  /* Card headings */
+  .text-2xl { font-size: var(--text-xl) !important; }
+  .text-xl  { font-size: var(--text-lg) !important; }
+  .text-lg  { font-size: var(--text-base) !important; }
+
+  /* Body & captions */
+  .text-sm  { font-size: var(--text-sm) !important; }
+  .text-xs  { font-size: var(--text-xs) !important; }
+
+  /* Reduce section vertical padding */
+  .py-24 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+  .py-20 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+  .py-16 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  .mb-16 { margin-bottom: 2.5rem !important; }
+  .mb-12 { margin-bottom: 2rem !important; }
+  .gap-16 { gap: 2rem !important; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Tablet mid-range fixes */
+  .text-6xl, .md\:text-6xl { font-size: clamp(2.2rem, 5vw, 3rem) !important; }
+  .text-5xl, .md\:text-5xl { font-size: clamp(1.9rem, 4.5vw, 2.5rem) !important; }
+  .text-4xl, .md\:text-4xl { font-size: clamp(1.6rem, 4vw, 2.25rem) !important; }
 }
 
 /* Custom Scrollbar */

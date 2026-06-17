@@ -176,6 +176,7 @@ const Navbar = () => {
                 { name: 'NOTRE MISSION', path: '/about#mission' },
                 { name: 'NOS RESULTAT', path: '/about#results' },
                 { name: 'POURQUOI CHOISIR SIAAH', path: '/about#why' },
+                { name: 'THE BOARD', path: '/about#board' },
             ]
         },
         {
@@ -208,7 +209,7 @@ const Navbar = () => {
                     <img
                         src="/images/logo_siaah_main.svg"
                         alt="SIAAH — Société de l'Immatriculation et de l'Assurance Automobile en Haïti"
-                        className="h-12 md:h-28 w-auto object-contain"
+                        className="h-12 md:h-32 w-auto object-contain"
                     />
                 </Link>
 

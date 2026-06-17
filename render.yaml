@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: siaah
+    runtime: node
+    region: oregon
+
+    # Build: install deps for both frontend & backend, then build the React app
+    buildCommand: |
+      cd frontend && npm ci && npm run build
+      cd ../backend && npm ci
+
+    # Start: run the Express server (it serves both the API and the built frontend)
+    startCommand: node backend/src/server.js
+
+    # Environment variables – set these in the Render dashboard
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add your real secrets in the Render dashboard (DB_URL, JWT_SECRET, etc.)

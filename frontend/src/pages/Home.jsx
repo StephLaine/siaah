@@ -65,11 +65,11 @@ const Home = () => {
                 ></div>
                 <div className="container mx-auto px-4 relative z-10 text-center text-white">
                     <div className="max-w-5xl mx-auto space-y-12">
-                        <h3 className="text-5xl md:text-8xl font-extrabold tracking-tight leading-[1.05]">
+                        <h3 className="text-7xl md:text-8xl font-extrabold tracking-tight leading-[1.45]">
                             Simplifiez vos <br /> démarches <br /> automobiles en Haïti
                         </h3>
-                        <p className="text-lg md:text-xl text-slate-200 font-medium max-w-3xl mx-auto leading-relaxed opacity-90">
-                            Gérez votre permis de conduire, l'immatriculation de votre véhicule, et votre assurance automobile en toute simplicité. Service officiel du Ministère de l'Économie et des Finances.
+                        <p className="text-lg md:text-xl text-slate-300 font-medium max-w-3xl mx-auto leading-relaxed opacity-90">
+                            Gérez votre permis de conduire, l'immatriculation de votre véhicule, votre assurance automobile et les Contaventions en toute simplicité. Service officiel du Ministère de l'Économie et des Finances  SIAAH.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center items-center gap-6 pt-6">
                             <Link to="/services" className="w-full sm:w-auto bg-[#3b5998] text-white px-8 py-4 rounded font-bold text-sm uppercase tracking-widest hover:bg-slate-700 transition flex items-center justify-center gap-3">

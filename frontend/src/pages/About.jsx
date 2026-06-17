@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Shield, Target, BarChart3, Users, Clock, Zap, Globe, Award,
-    CheckCircle, ArrowRight, Building2, FileText, Car
+    CheckCircle, ArrowRight, Building2, FileText, Car, Code2, Palette, Layers,
+    Mail, GraduationCap, BookOpen
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -36,7 +37,7 @@ const About = () => {
 
     const reasons = [
         { title: 'Disponible', detail: '24h/7j', icon: <Clock className="h-8 w-8 text-[#3b5998]" />, desc: 'Accès à vos démarches à toute heure, depuis n\'importe quel appareil.' },
-        { title: 'Équipe', detail: 'Dynamique', icon: <Users className="h-8 w-8 text-[#3b5998]" />, desc: 'Une équipe de professionnels dédiés au service citoyen.'},
+        { title: 'Équipe', detail: 'Dynamique', icon: <Users className="h-8 w-8 text-[#3b5998]" />, desc: 'Une équipe de professionnels dédiés au service citoyen.' },
         { title: 'Service', detail: 'Rapide', icon: <Zap className="h-8 w-8 text-[#3b5998]" />, desc: 'Traitement accéléré de vos demandes grâce à la digitalisation.' },
         { title: 'Portée', detail: 'Nationale', icon: <Globe className="h-8 w-8 text-[#3b5998]" />, desc: 'Présence dans toutes les régions d\'Haïti avec des bureaux dédiés.' },
     ];
@@ -115,7 +116,7 @@ const About = () => {
                             className="lg:w-1/2"
                         >
                             <img
-                                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&q=80&w=900"
+                                src="/src/assets/images/Liscence.png"
                                 alt="À Propos du SIAAH"
                                 className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
                             />
@@ -164,7 +165,7 @@ const About = () => {
                             className="lg:w-1/2"
                         >
                             <img
-                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=900"
+                                src="src/assets/images/OIP (19) copy.jpg"
                                 alt="Notre Mission"
                                 className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
                             />
@@ -242,6 +243,194 @@ const About = () => {
                                     <p className="text-[#0d1440] text-2xl font-black uppercase">{r.detail}</p>
                                 </div>
                                 <p className="text-slate-500 text-sm leading-relaxed">{r.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Board Administratif */}
+            <section id="board" className="py-24 bg-slate-50 scroll-mt-20">
+                <div className="container mx-auto px-4">
+                    <motion.div
+                        initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
+                        className="text-center mb-16"
+                    >
+                        <motion.p variants={fadeInUp} className="text-[#3b5998] text-xs font-bold uppercase tracking-widest mb-4">Gouvernance</motion.p>
+                        <motion.h2 variants={fadeInUp} className="text-4xl font-extrabold text-[#0d1440]">Board Administratif</motion.h2>
+                        <motion.p variants={fadeInUp} className="mt-4 text-slate-500 font-medium max-w-xl mx-auto text-sm leading-relaxed">
+                            Les professionnels qui guident et encadrent le développement académique et stratégique de la plateforme SIAAH.
+                        </motion.p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                        {[
+                            {
+                                num: 'A',
+                                name: 'Calixte Evenson',
+                                role: 'Doyen — Faculté FSGA, Université Quisqueya',
+                                detail: 'Parrain académique du projet SIAAH, il supervise l\'encadrement institutionnel et la rigueur scientifique de la démarche.',
+                                icon: <GraduationCap className="h-8 w-8" />,
+                                tag: 'Doyen FSGA',
+                                color: '#0d1440'
+                            },
+                            {
+                                num: 'B',
+                                name: 'Carly Baja',
+                                role: 'Professeur Encadreur & Développeur',
+                                detail: 'Expert en développement logiciel et mentor principal de l\'équipe technique, il assure la cohérence architecturale du système.',
+                                icon: <BookOpen className="h-8 w-8" />,
+                                tag: 'Encadreur',
+                                color: '#1e3a8a'
+                            },
+                        ].map((admin, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.2, duration: 0.6 }}
+                                className="group relative bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col"
+                            >
+                                {/* Top accent bar */}
+                                <div className="h-1.5 w-full" style={{ background: admin.color }} />
+
+                                {/* Avatar placeholder */}
+                                <div
+                                    className="flex items-center justify-center h-40 w-full"
+                                    style={{ background: `${admin.color}12` }}
+                                >
+                                    <div
+                                        className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg text-white"
+                                        style={{ background: admin.color }}
+                                    >
+                                        {admin.icon}
+                                    </div>
+                                </div>
+
+                                {/* Info */}
+                                <div className="p-6 space-y-3 flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <span
+                                            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0"
+                                            style={{ background: admin.color }}
+                                        >{admin.num}</span>
+                                        <div
+                                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-white"
+                                            style={{ background: `${admin.color}cc` }}
+                                        >
+                                            {admin.tag}
+                                        </div>
+                                    </div>
+                                    <h3 className="text-[#0d1440] font-extrabold text-xl leading-tight">{admin.name}</h3>
+                                    <p className="text-[#3b5998] text-xs font-bold uppercase tracking-wider">{admin.role}</p>
+                                    <p className="text-slate-500 text-sm leading-relaxed">{admin.detail}</p>
+                                    <div className="h-0.5 w-10 rounded-full mt-2" style={{ background: admin.color }} />
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Team Section */}
+            <section id="team" className="py-24 bg-white scroll-mt-20">
+                <div className="container mx-auto px-4">
+                    <motion.div
+                        initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
+                        className="text-center mb-16"
+                    >
+                        <motion.p variants={fadeInUp} className="text-[#3b5998] text-xs font-bold uppercase tracking-widest mb-4">Notre Équipe</motion.p>
+                        <motion.h2 variants={fadeInUp} className="text-4xl font-extrabold text-[#0d1440]">Board — Staff Technique</motion.h2>
+                        <motion.p variants={fadeInUp} className="mt-4 text-slate-500 font-medium max-w-xl mx-auto text-sm leading-relaxed">
+                            Les architectes derrière la plateforme SIAAH — une équipe passionnée dédiée à la transformation numérique en Haïti.
+                        </motion.p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        {[
+                            {
+                                num: '01',
+                                name: 'John Widno Dorcy',
+                                role: 'Concepteur Développeur',
+                                photo: '/src/assets/images/J.jpg',
+                                icon: <Code2 className="h-4 w-4" />,
+                                tag: 'Développement',
+                                email: 'j.dorcy@siaah.ht',
+                                color: '#3b5998'
+                            },
+                            {
+                                num: '02',
+                                name: 'Saraï Dieu-Donnée',
+                                role: 'Conceptrice Designer',
+                                photo: '/src/assets/images/D.jpg',
+                                icon: <Palette className="h-4 w-4" />,
+                                tag: 'Design & UX',
+                                email: 's.dieudonnee@siaah.ht',
+                                color: '#7c3aed'
+                            },
+                            {
+                                num: '03',
+                                name: 'Stéphane Laine',
+                                role: 'Concepteur & Développeur',
+                                photo: '/src/assets/images/S.jpg',
+                                icon: <Layers className="h-4 w-4" />,
+                                tag: 'Architecture',
+                                email: 's.laine@siaah.ht',
+                                color: '#0d9488'
+                            },
+                        ].map((member, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.15, duration: 0.6 }}
+                                className="group relative bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
+                            >
+                                {/* Top accent bar */}
+                                <div className="h-1.5 w-full" style={{ background: member.color }} />
+
+                                {/* Photo */}
+                                <div className="relative overflow-hidden">
+                                    <img
+                                        src={member.photo}
+                                        alt={member.name}
+                                        className="w-full h-64 object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                                    />
+                                    {/* Number badge */}
+                                    <div
+                                        className="absolute top-3 left-3 w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg"
+                                        style={{ background: member.color }}
+                                    >
+                                        {member.num}
+                                    </div>
+                                    {/* Role tag overlay */}
+                                    <div
+                                        className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-bold shadow-lg backdrop-blur-sm"
+                                        style={{ background: `${member.color}cc` }}
+                                    >
+                                        {member.icon}
+                                        {member.tag}
+                                    </div>
+                                </div>
+
+                                {/* Info */}
+                                <div className="p-6 space-y-2">
+                                    <h3 className="text-[#0d1440] font-extrabold text-lg leading-tight">{member.name}</h3>
+                                    <p className="text-slate-500 text-sm font-medium">{member.role}</p>
+                                    <a
+                                        href={`mailto:${member.email}`}
+                                        className="inline-flex items-center gap-1.5 text-xs font-semibold mt-1 hover:underline"
+                                        style={{ color: member.color }}
+                                    >
+                                        <Mail className="h-3.5 w-3.5" />
+                                        {member.email}
+                                    </a>
+                                    <div className="pt-2">
+                                        <div className="h-0.5 w-10 rounded-full" style={{ background: member.color }} />
+                                    </div>
+                                </div>
                             </motion.div>
                         ))}
                     </div>
