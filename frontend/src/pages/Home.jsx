@@ -65,7 +65,7 @@ const Home = () => {
                 ></div>
                 <div className="container mx-auto px-4 relative z-10 text-center text-white">
                     <div className="max-w-5xl mx-auto space-y-12">
-                        <h3 className="text-7xl md:text-8xl font-extrabold tracking-tight leading-[1.45]">
+                        <h3 className="text-6xl md:text-6xl font-extrabold tracking-tight leading-[1.15]">
                             Simplifiez vos <br /> démarches <br /> automobiles en Haïti
                         </h3>
                         <p className="text-lg md:text-xl text-slate-300 font-medium max-w-3xl mx-auto leading-relaxed opacity-90">
