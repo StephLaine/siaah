@@ -35,6 +35,16 @@ const StatutDemandes = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [activeMobileFilter, setActiveMobileFilter] = useState(null); // 'type' | 'status' | 'date' | 'search'
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const activeViewType = isMobile ? 'grid' : viewType;
 
   const [expandedSections, setExpandedSections] = useState({
     pending: true,
@@ -359,7 +369,70 @@ const StatutDemandes = () => {
 
       <div className="statut-container">
         <div className="pro-filters-bar unified-layout">
-          <div className="filter-item type-box">
+          {/* Mobile Filter Icons Row (Visible only on Mobile) */}
+          <div className="mobile-filter-icons-row">
+            <button 
+              type="button" 
+              className={`mobile-filter-icon-btn ${activeMobileFilter === 'type' ? 'active' : ''} ${filterType !== 'all' ? 'has-value' : ''}`}
+              onClick={() => setActiveMobileFilter(activeMobileFilter === 'type' ? null : 'type')}
+              title="Filtrer par type"
+            >
+              <Filter size={20} />
+              {filterType !== 'all' && <span className="filter-active-dot" />}
+            </button>
+            
+            <button 
+              type="button" 
+              className={`mobile-filter-icon-btn ${activeMobileFilter === 'status' ? 'active' : ''} ${filterStatus !== 'all' ? 'has-value' : ''}`}
+              onClick={() => setActiveMobileFilter(activeMobileFilter === 'status' ? null : 'status')}
+              title="Filtrer par statut"
+            >
+              <Clock size={20} />
+              {filterStatus !== 'all' && <span className="filter-active-dot" />}
+            </button>
+            
+            <button 
+              type="button" 
+              className={`mobile-filter-icon-btn ${activeMobileFilter === 'date' ? 'active' : ''} ${(startDate || endDate) ? 'has-value' : ''}`}
+              onClick={() => setActiveMobileFilter(activeMobileFilter === 'date' ? null : 'date')}
+              title="Filtrer par date"
+            >
+              <Clock size={20} />
+              {(startDate || endDate) && <span className="filter-active-dot" />}
+            </button>
+            
+            <button 
+              type="button" 
+              className={`mobile-filter-icon-btn ${activeMobileFilter === 'search' ? 'active' : ''} ${searchTerm ? 'has-value' : ''}`}
+              onClick={() => setActiveMobileFilter(activeMobileFilter === 'search' ? null : 'search')}
+              title="Recherche globale"
+            >
+              <Search size={20} />
+              {searchTerm && <span className="filter-active-dot" />}
+            </button>
+
+            {(filterType !== 'all' || filterStatus !== 'all' || startDate || endDate || searchTerm) && (
+              <button 
+                type="button" 
+                className="mobile-filter-icon-btn reset-btn"
+                onClick={() => {
+                  setFilterType('all');
+                  setFilterStatus('all');
+                  setStartDate('');
+                  setEndDate('');
+                  setSearchTerm('');
+                  setExpandedSections({ pending: true, processing: false, completed: false, rejected: false });
+                  setActiveMobileFilter(null);
+                }}
+                title="Réinitialiser"
+                style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}
+              >
+                <X size={20} />
+              </button>
+            )}
+          </div>
+
+          <div className={`filter-item type-box ${activeMobileFilter === 'type' ? 'mobile-visible' : 'mobile-hidden'}`}>
             <div className="filter-select-wrapper">
               <Filter size={14} className="filter-icon-inside" />
               <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
@@ -371,7 +444,7 @@ const StatutDemandes = () => {
             </div>
           </div>
 
-          <div className="filter-item status-box">
+          <div className={`filter-item status-box ${activeMobileFilter === 'status' ? 'mobile-visible' : 'mobile-hidden'}`}>
             <div className="filter-select-wrapper">
               <Clock size={14} className="filter-icon-inside" />
               <select 
@@ -398,7 +471,7 @@ const StatutDemandes = () => {
             </div>
           </div>
 
-          <div className="filter-item date-box">
+          <div className={`filter-item date-box ${activeMobileFilter === 'date' ? 'mobile-visible' : 'mobile-hidden'}`}>
             <div className="date-inputs-compact">
               <Clock size={14} className="filter-icon-inside" />
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -407,7 +480,7 @@ const StatutDemandes = () => {
             </div>
           </div>
 
-          <div className="filter-item search-box-compact">
+          <div className={`filter-item search-box-compact ${activeMobileFilter === 'search' ? 'mobile-visible' : 'mobile-hidden'}`}>
             <div className="search-container-mini">
               <Search size={16} className="search-icon-mini" />
               <input
@@ -439,7 +512,7 @@ const StatutDemandes = () => {
             <div className="flat-view-header">
               <h3>Résultats de recherche ({filteredRequests.length})</h3>
             </div>
-            {viewType === 'list' ? (
+            {activeViewType === 'list' ? (
               <div className="table-responsive pro-card-shadow">
                 <table className="demandes-pro-table">
                     <thead>
@@ -576,7 +649,7 @@ const StatutDemandes = () => {
                       </div>
                     ) : (
                       <>
-                        {viewType === 'list' ? (
+                        {activeViewType === 'list' ? (
                           <div className="table-responsive">
                             <table className="demandes-pro-table">
                               <thead>

@@ -35,15 +35,15 @@ const Home = () => {
     const actualites = [
         {
             title: 'SIAAH vous accompagne au quotidien',
-            image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=800'
+            image: 'src/assets/images/licence act.webp'
         },
         {
             title: 'SIAAH vous accompagne au quotidien',
-            image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=800'
+            image: 'src/assets/images/on way.webp'
         },
         {
             title: 'SIAAH vous accompagne au quotidien',
-            image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=800'
+            image: 'src/assets/images/LOGO1.png'
         },
     ];
 
