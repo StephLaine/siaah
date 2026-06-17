@@ -128,7 +128,8 @@ const Home = () => {
                             </div>
                         </div>
                         <div className="lg:w-1/2">
-                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200" alt="About" className="rounded-2xl shadow-xl w-full h-[350px] object-cover" />
+
+                            <img src="src/assets/images/Liscence.png" alt="About" className="rounded-2xl shadow-xl w-full h-[350px] object-cover" />
                         </div>
                     </div>
                 </div>
@@ -151,7 +152,7 @@ const Home = () => {
                             </div>
                         </div>
                         <div className="lg:w-1/2">
-                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200" alt="Mission" className="rounded-2xl shadow-xl w-full h-[350px] object-cover" />
+                            <img src="images/logo_siaah_main.svg" alt="Mission" className="rounded-2xl shadow-xl w-full h-[350px] object-cover" />
                         </div>
                     </div>
                 </div>

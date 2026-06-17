@@ -165,9 +165,9 @@ const About = () => {
                             className="lg:w-1/2"
                         >
                             <img
-                                src="src/assets/images/OIP (19) copy.jpg"
+                                src="../images/logo_siaah_white.svg"
                                 alt="Notre Mission"
-                                className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
+                                className="rounded-2xl shadow-2xl w-full h-[300px] object-cover"
                             />
                         </motion.div>
                     </div>
