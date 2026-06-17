@@ -53,7 +53,8 @@ app.use(express.static(frontendDist));
 
 // SPA catch-all: any GET that isn't a static file or API → send index.html
 // This enables client-side routing (React Router) to handle the URL
-app.get('*', (req, res) => {
+// Express 5 requires named wildcards: '*path' instead of bare '*'
+app.get('*path', (req, res) => {
     if (fs.existsSync(indexHtml)) {
         res.sendFile(indexHtml);
     } else {
