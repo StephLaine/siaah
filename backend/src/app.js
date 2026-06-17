@@ -39,7 +39,8 @@ app.use('/api/payments',      require('./routes/payment.routes'));
 app.use('/api/notifications',  require('./routes/notification.routes'));
 
 // Unknown /api/* → proper 404 JSON (not swallowed by SPA fallback)
-app.use('/api/*', (req, res) => {
+// Express 5 requires named wildcards: /api/*path instead of /api/*
+app.use('/api/*path', (req, res) => {
     res.status(404).json({ status: 'error', message: `API route not found: ${req.originalUrl}` });
 });
 
