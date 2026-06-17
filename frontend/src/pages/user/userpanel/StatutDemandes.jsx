@@ -44,8 +44,6 @@ const StatutDemandes = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const activeViewType = isMobile ? 'grid' : viewType;
-
   const [expandedSections, setExpandedSections] = useState({
     pending: true,
     validated: true,
@@ -62,6 +60,8 @@ const StatutDemandes = () => {
   const [paymentMethod, setPaymentMethod] = useState('Carte Bancaire');
   const [viewType, setViewType] = useState('list'); // 'list' or 'grid'
   const [sortBy, setSortBy] = useState('date-desc'); // 'date-desc', 'date-asc', 'type'
+
+  const activeViewType = isMobile ? 'grid' : viewType;
 
   React.useEffect(() => {
     const fetchRequests = async () => {
