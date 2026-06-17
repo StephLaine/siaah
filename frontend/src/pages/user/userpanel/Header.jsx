@@ -212,7 +212,7 @@ const Header = ({ onToggleSidebar, onAccueilClick }) => {
                   }
                 }}
               />
-              {isSearchExpanded && (
+              {(isSearchExpanded || searchValue) && (
                 <button 
                   type="button"
                   className="search-clear-btn"

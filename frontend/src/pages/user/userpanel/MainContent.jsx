@@ -50,8 +50,8 @@ const MainContent = () => {
       {/* Organization Info Section */}
       <div className="org-info">
         <div className="org-left">
-            <img src="file:///C:/Users/teach/.gemini/antigravity-ide/brain/33e9d054-6ffa-437c-bfce-7922b3d48ba9/lego_icon_1781696739369.png" alt="LEGO" className="lego-icon" style={{ width: '48px', height: '48px', marginRight: '8px' }} />
-            <img src="/haiti-coat-of-arms.png" alt="Coat of Arms" className="haiti-coat-of-arms-small" />
+            <img src="/images/logo_siaah_main.svg" alt="SIAAH Logo" className="header-logo-img" style={{ height: '36px', width: 'auto', marginRight: '12px' }} />
+            <img src="/images/Coat_of_arms_of_Haiti.svg" alt="Coat of Arms" className="haiti-coat-of-arms-small" style={{ height: '24px', width: 'auto', marginRight: '8px' }} />
           <span className="haiti-text">République d'Haïti</span>
         </div>
         <div className="org-center">

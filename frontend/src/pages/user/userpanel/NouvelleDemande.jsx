@@ -925,7 +925,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                                 setExpandedPersonal(!expandedPersonal);
                                                             }}
                                                         >
-                                                            {expandedPersonal ? <><ChevronUp size={18} /> <span className="toggle-text">Réduire</span></> : <><Edit3 size={18} /> <span className="toggle-text">Modifier</span></>}
+                                                            {expandedPersonal ? <ChevronUp size={20} /> : <Edit3 size={20} />}
                                                         </button>
                                                     )}
                                                 </div>
@@ -1086,7 +1086,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                                 setExpandedLocation(!expandedLocation);
                                                             }}
                                                         >
-                                                            {expandedLocation ? <><ChevronUp size={18} /> Réduire</> : <><Edit3 size={18} /> Modifier</>}
+                                                            {expandedLocation ? <ChevronUp size={20} /> : <Edit3 size={20} />}
                                                         </button>
                                                     )}
                                                 </div>
@@ -1271,7 +1271,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                             setExpandedService(!expandedService);
                                                         }}
                                                     >
-                                                        {expandedService ? <><ChevronUp size={18} /> Réduire</> : <><ChevronDown size={18} /> Voir</>}
+                                                        {expandedService ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                                                     </button>
                                                 </div>
 
