@@ -74,8 +74,8 @@ const sendWelcomeEmail = async (user, password) => {
 };
 
 const sendRequestConfirmation = async (user, request) => {
-    const subject = `Confirmation de votre demande #${request.id}`;
-    const textContent = `Confirmation de réception de votre demande de ${request.type}. N° Dossier: D-${request.id}`;
+    const subject = `Confirmation de votre demande REQ-${String(request.id).padStart(3, '0')}`;
+    const textContent = `Nous avons reçu votre demande de ${request.type}. N° Dossier: REQ-${String(request.id).padStart(3, '0')}`;
     const html = `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
             <div style="background: #1e3a8a; padding: 20px; text-align: center; color: white;">
@@ -83,8 +83,8 @@ const sendRequestConfirmation = async (user, request) => {
             </div>
             <div style="padding: 30px;">
                 <p>Bonjour <strong>${user.first_name}</strong>,</p>
-                <p>Nous avons bien reçu votre demande de <strong>${request.type}</strong>.</p>
-                <p>Numéro de dossier : <strong>D-${request.id}</strong></p>
+                <p>Nous avons reçu votre demande de <strong>${request.type}</strong>.</p>
+                <p>Numéro de dossier : <strong>REQ-${String(request.id).padStart(3, '0')}</strong></p>
                 <p>Votre dossier est actuellement en cours de traitement par nos services. Vous recevrez une notification à chaque étape importante.</p>
                 <p>Merci de votre confiance.</p>
             </div>
@@ -105,8 +105,8 @@ const sendStatusUpdateEmail = async (user, request, note = '', senderId = null) 
     };
 
     const statusLabel = statusLabels[request.status] || request.status;
-    const subject = `Mise à jour de votre dossier D-${request.id}`;
-    const textContent = `Le statut de votre dossier D-${request.id} a changé pour : ${statusLabel}. ${note ? 'Note: ' + note : ''}`;
+    const subject = `Mise à jour de votre dossier REQ-${String(request.id).padStart(3, '0')}`;
+    const textContent = `Le statut de votre dossier REQ-${String(request.id).padStart(3, '0')} a changé pour : ${statusLabel}. ${note ? 'Note: ' + note : ''}`;
 
     let actionExtra = '';
     if (request.status === 'validated') {
@@ -124,7 +124,7 @@ const sendStatusUpdateEmail = async (user, request, note = '', senderId = null) 
             </div>
             <div style="padding: 30px;">
                 <p>Bonjour ${user.first_name},</p>
-                <p>Le statut de votre dossier <strong>D-${request.id}</strong> (${request.type}) a été mis à jour :</p>
+                <p>Le statut de votre dossier <strong>REQ-${String(request.id).padStart(3, '0')}</strong> (${request.type}) a été mis à jour :</p>
                 <p style="font-size: 18px; color: #2563eb; font-weight: bold;">${statusLabel}</p>
                 ${note ? `<p><strong>Note de l'administration :</strong><br/>${note}</p>` : ''}
                 ${actionExtra}

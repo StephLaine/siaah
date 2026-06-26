@@ -4,7 +4,7 @@ const requestSchema = Joi.object({
     type: Joi.string().required(),
     price: Joi.number().min(0).required(),
     office_id: Joi.number().integer().allow(null),
-    status: Joi.string().valid('draft', 'pending', 'validated', 'processing', 'to_deliver', 'completed', 'cancelled').default('pending'),
+    status: Joi.string().valid('draft', 'pending', 'validated', 'processing', 'to_assign', 'to_deliver', 'completed', 'cancelled').default('pending'),
     details: Joi.alternatives().try(
         Joi.string(),
         Joi.object()

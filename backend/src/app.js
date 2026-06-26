@@ -10,8 +10,8 @@ const app = express();
 
 // ── Core Middleware ────────────────────────────────────────────────────────────
 app.use(helmet({
-  crossOriginResourcePolicy: false,
-  contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
 }));
 app.use(cors());
 app.use(morgan('dev'));
@@ -27,16 +27,17 @@ app.get('/health', (req, res) => {
 });
 
 // ── API Routes (must come BEFORE static/SPA fallback) ─────────────────────────
-app.use('/api/auth',          require('./routes/auth.routes'));
-app.use('/api/requests',      require('./routes/request.routes'));
-app.use('/api/admin',         require('./routes/admin.routes'));
-app.use('/api/superadmin',    require('./routes/superadmin.routes'));
-app.use('/api/entity-admin',  require('./routes/entityAdmin.routes'));
-app.use('/api/vehicles',      require('./routes/vehicle.routes'));
-app.use('/api/licenses',      require('./routes/license.routes'));
-app.use('/api/appointments',  require('./routes/appointment.routes'));
-app.use('/api/payments',      require('./routes/payment.routes'));
-app.use('/api/notifications',  require('./routes/notification.routes'));
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/requests', require('./routes/request.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/superadmin', require('./routes/superadmin.routes'));
+app.use('/api/entity-admin', require('./routes/entityAdmin.routes'));
+app.use('/api/vehicles', require('./routes/vehicle.routes'));
+app.use('/api/licenses', require('./routes/license.routes'));
+app.use('/api/appointments', require('./routes/appointment.routes'));
+app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
+app.use('/api/permits', require('./routes/permit.routes'));
 
 // Unknown /api/* → proper 404 JSON (not swallowed by SPA fallback)
 // Express 5 requires named wildcards: /api/*path instead of /api/*
@@ -46,7 +47,7 @@ app.use('/api/*path', (req, res) => {
 
 // ── Serve React SPA (all non-API routes → index.html) ─────────────────────────
 const frontendDist = path.join(__dirname, '../../frontend/dist');
-const indexHtml    = path.join(frontendDist, 'index.html');
+const indexHtml = path.join(frontendDist, 'index.html');
 
 // Serve static assets (JS, CSS, images) from the built frontend
 app.use(express.static(frontendDist));
@@ -76,3 +77,4 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+// Trigger nodemon restart

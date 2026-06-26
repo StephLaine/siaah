@@ -5,8 +5,11 @@ CREATE TABLE services (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
+  categorie VARCHAR(100),
   price NUMERIC DEFAULT 0,
   is_public BOOLEAN DEFAULT FALSE,
+  actif BOOLEAN DEFAULT TRUE,
+  required_documents JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );

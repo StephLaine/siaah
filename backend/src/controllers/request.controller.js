@@ -10,7 +10,7 @@ const syncUserInfo = async (userId, details) => {
         if (!full_address && street) full_address = `${houseNumber ? houseNumber + ' ' : ''}${street}`.trim();
         let nif = null, cin = null;
         if (nifCin) { if (nifCin.length > 10) cin = nifCin; else nif = nifCin; }
-        
+
         const updates = [];
         const values = [];
         let paramIdx = 1;
@@ -112,7 +112,7 @@ const createRequest = async (req, res) => {
 const getRequestById = async (req, res) => {
     const { id } = req.params;
     try {
-    const sql = `
+        const sql = `
             SELECT r.*, so.detailed_description, so.price_htg
             FROM service_requests r
             LEFT JOIN service_operations so ON (r.details->>'operationId')::int = so.id
@@ -366,9 +366,9 @@ const sendUserMessage = async (req, res) => {
         const adminUser = adminResult.rows[0];
 
         if (!targetUser) return res.status(404).json({ status: 'error', message: 'Utilisateur non trouvé' });
-        
+
         const authorName = adminUser ? `${adminUser.first_name} ${adminUser.last_name}` : 'Administrateur SIAAH';
-        
+
         await sendCustomMessageEmail(targetUser, subject || 'Information SIAAH', message, authorName, req.user.id);
         res.json({ status: 'success', message: 'Message envoyé' });
     } catch (err) {

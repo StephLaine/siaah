@@ -3,7 +3,7 @@ const { Client } = require('pg');
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: false
+  ssl: { rejectUnauthorized: false }
 });
 
 const SERVICES = [
@@ -36,18 +36,18 @@ const DEFAULT_OPERATIONS = {
   ]
 };
 
-async function run() {
+async function seedDefaultData() {
   await client.connect();
-  // Insert services
+  // Insert services with upsert
   const serviceIdMap = {};
   for (const svc of SERVICES) {
     const res = await client.query(
-      `INSERT INTO services (name, description) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description RETURNING id`,
+      `INSERT INTO services (name, description, categorie, is_public) VALUES ($1, $2, $1, TRUE) ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description, categorie = EXCLUDED.categorie, is_public = EXCLUDED.is_public RETURNING id`,
       [svc.name, svc.description]
     );
     serviceIdMap[svc.name] = res.rows[0].id;
   }
-  // Insert operations
+  // Insert operations if not exist
   for (const [svcName, ops] of Object.entries(DEFAULT_OPERATIONS)) {
     const svcId = serviceIdMap[svcName];
     for (const op of ops) {
@@ -63,4 +63,12 @@ async function run() {
   await client.end();
 }
 
-run().catch(err => { console.error('Seeding error:', err); process.exit(1); });
+// If this script is run directly, execute seeding
+if (require.main === module) {
+  seedDefaultData().catch(err => {
+    console.error('Seeding error:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { seedDefaultData };
