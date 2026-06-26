@@ -2,22 +2,32 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Search, RefreshCw, Eye, ChevronLeft,
   FileText, AlertCircle, X, Mail, Printer, Download,
-  Check as CheckIcon
+  Check as CheckIcon, CreditCard, Truck
 } from 'lucide-react';
 import './RequestAnalysis.css';
+import PermitAssignModal from './PermitAssignModal';
+import DeliveryModal from './DeliveryModal';
 
-const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage, token }) => {
+const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, onProcessing, onDeliver, onMessage, token, user }) => {
   const [fullRequest, setFullRequest] = useState(null);
   const [loadingRequest, setLoadingRequest] = useState(false);
   const [docValidation, setDocValidation] = useState({});
   const [isFormValid, setIsFormValid] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showPermitModal, setShowPermitModal] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Detect request states
+  const isPermisRequest = (requestData?.type || '').toLowerCase().includes('permis');
+  const isToAssign = requestData?.status === 'to_assign';
+  const isToDeliver = requestData?.status === 'to_deliver';
+  const isCompleted = requestData?.status === 'completed';
 
   const statusLabels = {
     pending: 'En attente', processing: 'En analyse', completed: 'Terminée',
     rejected: 'Refusée', paused: 'En Pause', validated: 'En Paiement',
-    to_deliver: 'À Livrer', draft: 'Brouillon'
+    to_assign: 'À Assigner', to_deliver: 'À Livrer', draft: 'Brouillon'
   };
 
   const getStatusLabel = (status) => statusLabels[status] || status || '—';
@@ -187,7 +197,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
           <span style={{ color: '#94a3b8' }}>›</span>
           <span>{serviceName}</span>
           <span style={{ color: '#94a3b8' }}>›</span>
-          <span>Dossier D-{req?.id}</span>
+          <span>Dossier REQ-{String(req?.id || '').padStart(3, '0')}</span>
           <span style={{ color: '#94a3b8' }}>›</span>
           <span style={{ fontWeight: 700, color: '#1e3a8a' }}>Analyse</span>
         </div>
@@ -224,17 +234,47 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
         </div>
 
         <div className="ra-action-right">
-          <button
-            className="ra-btn-pill-green"
-            disabled={!isEverythingValidated()}
-            onClick={() => onValidate && onValidate(getUpdatedDetails())}
-            style={{ opacity: isEverythingValidated() ? 1 : 0.5, cursor: isEverythingValidated() ? 'pointer' : 'not-allowed' }}
-          >
-            <CheckIcon size={16} /> Valider
-          </button>
-          <button className="ra-btn-pill-red" onClick={() => onReject && onReject('rejected', '', getUpdatedDetails())}>
-            <X size={16} /> Refuser
-          </button>
+          {isCompleted ? (
+            <span style={{ color: '#059669', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: '#ecfdf5', borderRadius: 8 }}>
+              <CheckIcon size={16} /> Demande traitée & livrée
+            </span>
+          ) : isToAssign && isPermisRequest ? (
+            <button
+              className="ra-btn-pill-green"
+              onClick={() => setShowPermitModal(true)}
+              style={{
+                background: 'linear-gradient(135deg,#1e3a8a,#2563eb)',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <CreditCard size={16} /> Assigner Permis
+            </button>
+          ) : isToDeliver ? (
+            <button
+              className="ra-btn-pill-green"
+              onClick={() => setShowDeliveryModal(true)}
+              style={{
+                background: 'linear-gradient(135deg,#22c55e,#16a34a)',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <Truck size={16} /> Livrer
+            </button>
+          ) : (
+            <button
+              className="ra-btn-pill-green"
+              disabled={!isEverythingValidated()}
+              onClick={() => onValidate && onValidate(getUpdatedDetails())}
+              style={{ opacity: isEverythingValidated() ? 1 : 0.5, cursor: isEverythingValidated() ? 'pointer' : 'not-allowed' }}
+            >
+              <CheckIcon size={16} /> Valider
+            </button>
+          )}
+          {!isCompleted && !isToDeliver && !isToAssign && (
+            <button className="ra-btn-pill-red" onClick={() => onReject && onReject('rejected', '', getUpdatedDetails())}>
+              <X size={16} /> Refuser
+            </button>
+          )}
           <button className="ra-btn-pill-outline" onClick={() => onMessage && onMessage(req?.user_id)}>
             <Mail size={16} /> Message
           </button>
@@ -381,6 +421,29 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
               </div>
             </div>
           )}
+
+          {/* Delivery Details */}
+          {(req?.delivered_by || req?.received_by || req?.delivery_date) && (
+            <div className="ra-section" style={{ borderLeft: '4px solid #10b981', background: '#f0fdf4' }}>
+              <h3 className="ra-section-title" style={{ color: '#065f46' }}>Détails de la Livraison</h3>
+              <div className="ra-section-grid">
+                <div className="ra-grid-item">
+                  <span className="ra-grid-label">Livreur :</span>
+                  <span className="ra-grid-value" style={{ color: '#065f46', fontWeight: 700 }}>{req.delivered_by || '—'}</span>
+                </div>
+                <div className="ra-grid-item">
+                  <span className="ra-grid-label">Récipiendaire :</span>
+                  <span className="ra-grid-value" style={{ color: '#065f46', fontWeight: 700 }}>{req.received_by || '—'}</span>
+                </div>
+                <div className="ra-grid-item" style={{ gridColumn: 'span 2' }}>
+                  <span className="ra-grid-label">Livré le :</span>
+                  <span className="ra-grid-value" style={{ color: '#065f46', fontWeight: 700 }}>
+                    {req.delivery_date ? new Date(req.delivery_date).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT PANEL — DOCUMENTS */}
@@ -394,8 +457,8 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
               <div className={`ra-doc-item-premium ${isFormValid === 'yes' ? 'is-valid' : ''}`}>
                 <div
                   className="ra-doc-icon-col"
-                  style={{ cursor: isFormValid === 'yes' ? 'default' : 'pointer' }}
-                  onClick={() => handleFormValidChange(isFormValid === 'yes' ? null : 'yes')}
+                  style={{ cursor: (isFormValid === 'yes' || isToAssign || isToDeliver || isCompleted) ? 'default' : 'pointer' }}
+                  onClick={() => !(isToAssign || isToDeliver || isCompleted) && handleFormValidChange(isFormValid === 'yes' ? null : 'yes')}
                 >
                   {isFormValid === 'yes' ? (
                     <CheckIcon size={20} style={{ color: '#22c55e' }} />
@@ -419,8 +482,8 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
                 <div key={doc.id} className={`ra-doc-item-premium ${doc.isMissing ? 'is-missing' : (docValidation[doc.id] ? 'is-valid' : '')}`}>
                   <div
                     className="ra-doc-icon-col"
-                    style={{ cursor: (doc.isMissing || docValidation[doc.id]) ? 'default' : 'pointer' }}
-                    onClick={() => !doc.isMissing && toggleValidation(doc.id)}
+                    style={{ cursor: (doc.isMissing || docValidation[doc.id] || isToAssign || isToDeliver || isCompleted) ? 'default' : 'pointer' }}
+                    onClick={() => !doc.isMissing && !(isToAssign || isToDeliver || isCompleted) && toggleValidation(doc.id)}
                   >
                     {doc.isMissing ? (
                       <X size={20} style={{ color: '#ef4444' }} />
@@ -573,6 +636,27 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onMessage,
             </div>
           </div>
         </div>
+      )}
+
+      {/* PERMIT ASSIGN MODAL */}
+      {showPermitModal && (
+        <PermitAssignModal
+          request={{ ...req, first_name: req?.first_name || '', last_name: req?.last_name || '' }}
+          token={token}
+          onClose={() => setShowPermitModal(false)}
+          onSuccess={() => { onBack && onBack(); }}
+        />
+      )}
+
+      {/* DELIVERY MODAL */}
+      {showDeliveryModal && (
+        <DeliveryModal
+          request={req}
+          user={user}
+          token={token}
+          onClose={() => setShowDeliveryModal(false)}
+          onSuccess={() => { onBack && onBack(); }}
+        />
       )}
     </div>
   );

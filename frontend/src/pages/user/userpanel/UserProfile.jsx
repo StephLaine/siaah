@@ -120,6 +120,24 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
       .catch(err => console.error('Comms error:', err));
   }, [initialUser?.id]);
 
+  // Permit History (User Permits)
+  const [permits, setPermits] = useState([]);
+  useEffect(() => {
+    if (!initialUser?.id) return;
+    const token = localStorage.getItem('token');
+    fetch(`/api/permits/user/${initialUser.id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'success') {
+          setPermits(d.data);
+          setUser(prev => ({ ...prev, licenses: d.data }));
+        }
+      })
+      .catch(err => console.error('Permits error:', err));
+  }, [initialUser?.id]);
+
   if (!user) return null;
 
   const toggleSection = (section) => {
@@ -642,17 +660,26 @@ const UserProfile = ({ user: initialUser, onClose, onAnalyzeRequest }) => {
                       <>
                         {user.licenses
                           .slice((currentPagePermis - 1) * ITEMS_PER_PAGE, currentPagePermis * ITEMS_PER_PAGE)
-                          .map((l, i) => (
-                            <div key={i} className="demarche-mini-item">
-                              <div>
-                                <div className="demarche-name">Permis #{l.license_number}</div>
-                                <div className="demarche-date">Catégorie : {l.category} — Expire : {new Date(l.expiry_date).toLocaleDateString()}</div>
+                          .map((l, i) => {
+                            const isExpired = new Date(l.expiry_date) < new Date();
+                            const isRevoked = l.status === 'revoked';
+                            const statusText = isRevoked ? 'RÉVOQUÉ' : (isExpired ? 'EXPIRÉ' : 'VALIDE');
+                            const statusClass = isRevoked 
+                              ? 'bg-red-50 text-red-600' 
+                              : (isExpired ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600');
+                            const category = l.request_details?.licenseCategory || 'N/A';
+                            return (
+                              <div key={i} className="demarche-mini-item">
+                                <div>
+                                  <div className="demarche-name">Permis #{l.permit_number}</div>
+                                  <div className="demarche-date">Catégorie : {category} — Émis : {new Date(l.issuance_date).toLocaleDateString()} — Expire : {new Date(l.expiry_date).toLocaleDateString()}</div>
+                                </div>
+                                <div className={`text-[10px] font-bold px-2 py-1 rounded ${statusClass}`}>
+                                  {statusText}
+                                </div>
                               </div>
-                              <div className={`text-[10px] font-bold px-2 py-1 rounded ${l.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                                {l.status === 'active' ? 'VALIDE' : 'EXPIRE'}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         <Pagination 
                           totalItems={user.licenses.length} 
                           currentPage={currentPagePermis} 

@@ -37,10 +37,20 @@ import GestionVehicules from './GestionVehicules';
 import GestionPermisConfig from './GestionPermisConfig';
 import MesRendezVous from './MesRendezVous';
 import Reports from './Reports';
+import DeliveryModal from './DeliveryModal';
 
 const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSectionSelect, externalRequest }) => {
   const { user, token } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Map Permis submenu sections to corresponding tabs
+  React.useEffect(() => {
+    if (activeSection === 'a-assigner-permis') {
+      onTabSelect('a-assigner');
+    } else if (activeSection === 'a-livrer-permis') {
+      onTabSelect('a-livrer');
+    }
+  }, [activeSection]);
 
   // Track if search result was processed
   useEffect(() => {
@@ -81,6 +91,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   // Requests state (must be declared before useEffect)
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [deliveryRequest, setDeliveryRequest] = useState(null);
 
   const authHeader = { 'Authorization': `Bearer ${token}` };
   const entityName = user?.entity_name || 'Entité';
@@ -124,7 +135,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       setLoading(true);
       const res = await axios.get(`/api/admin/users/${userId}`, { headers: authHeader });
       const fetchedUser = res.data.data;
-      
+
       // Filter requests based on allowed services for employees/admin
       if (fetchedUser.requests && user) {
         const matchesService = (allowedName, reqType) => {
@@ -138,24 +149,24 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
         };
 
         if (user.role_id === 3) {
-          const assigned = Array.isArray(user.assigned_services) 
-            ? user.assigned_services 
+          const assigned = Array.isArray(user.assigned_services)
+            ? user.assigned_services
             : (typeof user.assigned_services === 'string' ? JSON.parse(user.assigned_services || '[]') : []);
           if (assigned.length > 0) {
-            fetchedUser.requests = fetchedUser.requests.filter(req => 
+            fetchedUser.requests = fetchedUser.requests.filter(req =>
               assigned.some(a => matchesService(a, req.type))
             );
           }
         } else if (user.role_id === 2) {
           const entityServices = user.entity_services || [];
           if (entityServices.length > 0) {
-            fetchedUser.requests = fetchedUser.requests.filter(req => 
+            fetchedUser.requests = fetchedUser.requests.filter(req =>
               entityServices.some(es => matchesService(es, req.type))
             );
           }
         }
       }
-      
+
       setSelectedUser(fetchedUser);
       setShowUserProfile(true);
     } catch (err) {
@@ -289,6 +300,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       rejected: { label: 'Refusée', type: 'rejected' },
       paused: { label: 'En Pause', type: 'paused' },
       validated: { label: 'En Paiement', type: 'validated' },
+      to_assign: { label: 'À Assigner', type: 'to_assign' },
       to_deliver: { label: 'À Livrer', type: 'to_deliver' },
       draft: { label: 'Brouillon', type: 'draft' }
     };
@@ -317,22 +329,32 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       filtered = filtered.filter(r => r.status === 'processing' || r.status === 'paused');
     } else if (activeTab === 'paiements') {
       filtered = filtered.filter(r => r.status === 'validated' || r.status === 'paiement');
+    } else if (activeTab === 'a-assigner') {
+      filtered = filtered.filter(r => r.status === 'to_assign');
     } else if (activeTab === 'a-livrer') {
       filtered = filtered.filter(r => r.status === 'to_deliver');
     } else if (activeTab === 'nouvelles-demandes') {
       filtered = filtered.filter(r => r.status === 'pending');
     }
+
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(r => {
-        // Try direct columns first, then fall back to details JSONB
         const details = r.details || {};
         const clientFirstName = r.first_name || details.firstName || '';
         const clientLastName = r.last_name || details.lastName || '';
-        const fullName = `${clientFirstName} ${clientLastName}`;
+        const fullName = `${clientFirstName} ${clientLastName}`.toLowerCase();
+        const rawId = String(r.id).toLowerCase();
+        const formattedDId = `d-${rawId}`;
+        const formattedReqId3 = `req-${rawId.padStart(3, '0')}`;
+        const formattedReqId6 = `req-${rawId.padStart(6, '0')}`;
         return (
-          String(r.id).includes(searchTerm) ||
-          fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (r.type || '').toLowerCase().includes(searchTerm.toLowerCase())
+          rawId.includes(term) ||
+          formattedDId.includes(term) ||
+          formattedReqId3.includes(term) ||
+          formattedReqId6.includes(term) ||
+          fullName.includes(term) ||
+          (r.type || '').toLowerCase().includes(term)
         );
       });
     }
@@ -370,18 +392,19 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     setSelectedRequest(null);
     setShowUserProfile(false);
     setSelectedUser(null);
+    fetchOfficeRequests();
   };
 
   const handleValidate = (details) => {
     const isPaid = selectedRequest?.payment_status === 'paid';
-    const nextStatus = isPaid ? 'to_deliver' : 'validated';
-    
+    const nextStatus = isPaid ? 'to_assign' : 'validated';
+
     setConfirmModal({
       status: nextStatus,
       requestId: selectedRequest?.id,
       title: 'Confirmation de Validation',
-      message: isPaid 
-        ? 'Dossier payé. Voulez-vous valider et passer à l\'étape de livraison ?' 
+      message: isPaid
+        ? 'Dossier payé. Voulez-vous valider et passer à l\'étape de livraison ?'
         : 'Dossier non payé. Voulez-vous valider et passer à l\'étape de paiement ?',
       details: typeof details === 'object' ? details : null,
       note: 'Dossier validé par l\'administration',
@@ -423,12 +446,12 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
 
   const handleSetProcessing = (details = null) => {
     setConfirmModal({
-      type: 'processing',
-      status: 'processing',
+      type: 'validation',
+      status: 'to_assign',
       details: details,
       requestId: selectedRequest?.id,
-      title: 'Remettre en Analyse',
-      message: 'Voulez-vous vraiment remettre ce dossier en analyse ? Il sera à nouveau visible dans la section "Analyse en cours".'
+      title: 'Confirmation de Validation',
+      message: "Dossier payé. Voulez‑vous valider et passer à l'étape d'assignement ?",
     });
   };
 
@@ -490,9 +513,16 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     if (!searchDocId.trim()) return;
     try {
       setLoading(true);
-      const res = await axios.get(`/api/admin/search?query=${searchDocId.trim()}`, { headers: authHeader });
+      // Allow user to type raw ID, "D-123", or "REQ-123"
+      let query = searchDocId.trim();
+      if (/^d[-\s]*/i.test(query)) {
+        query = query.replace(/^d[-\s]*/i, '');
+      } else if (/^req[-\s]*/i.test(query)) {
+        query = query.replace(/^req[-\s]*/i, '').replace(/^0+/, ''); // strip REQ- and leading zeros
+      }
+      const res = await axios.get(`/api/admin/search?query=${query}`, { headers: authHeader });
       const { type, data } = res.data;
-      
+
       if (type === 'request') {
         setSelectedRequest(data);
         setShowAnalysis(true);
@@ -544,6 +574,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   const countPending = serviceReqs.filter(r => r.status === 'pending').length;
   const countProcessing = serviceReqs.filter(r => r.status === 'processing' || r.status === 'paused').length;
   const countPaiements = serviceReqs.filter(r => r.status === 'validated' || r.status === 'paiement').length;
+  const countAAssigner = serviceReqs.filter(r => r.status === 'to_assign').length;
   const countALivrer = serviceReqs.filter(r => r.status === 'to_deliver').length;
   const countCompleted = serviceReqs.filter(r => r.status === 'completed').length;
   const countRejected = serviceReqs.filter(r => r.status === 'rejected').length;
@@ -590,11 +621,11 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
           <div className="dashboard-search-section">
             <h3 className="search-title"><Search size={20} /> Rechercher</h3>
             <div className="dashboard-search-bar">
-              <input 
-                type="text" 
-                placeholder="N° dossier, nom, email ou NIF..." 
-                value={searchDocId} 
-                onChange={(e) => setSearchDocId(e.target.value)} 
+              <input
+                type="text"
+                placeholder="N° dossier, nom, email ou NIF..."
+                value={searchDocId}
+                onChange={(e) => setSearchDocId(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearchRequest()}
               />
               <button className="search-submit-btn" onClick={handleSearchRequest}>Rechercher</button>
@@ -625,7 +656,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     content = (
       <main className="admin-main-content">
         <div className="content-header"><div className="breadcrumb"><span className="breadcrumb-item">{entityName}</span></div></div>
-        <UserList users={users} loading={loading} onShowProfile={fetchUserDetail} onEdit={() => {}} onDelete={() => {}} />
+        <UserList users={users} loading={loading} onShowProfile={fetchUserDetail} onEdit={() => { }} onDelete={() => { }} />
       </main>
     );
   } else if (activeSection.startsWith('flotte-vehicules') || activeSection === 'gestion-vehicules') {
@@ -692,28 +723,41 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
           <button className={`tab ${activeTab === 'nouvelles-demandes' ? 'active' : ''}`} onClick={() => onTabSelect('nouvelles-demandes')}>Nouvelle demande ({countPending})</button>
           <button className={`tab ${activeTab === 'documents-analyse' ? 'active' : ''}`} onClick={() => onTabSelect('documents-analyse')}>Analyse en cours ({countProcessing})</button>
           <button className={`tab ${activeTab === 'paiements' ? 'active' : ''}`} onClick={() => onTabSelect('paiements')}>Paiement ({countPaiements})</button>
+          <button className={`tab ${activeTab === 'a-assigner' ? 'active' : ''}`} onClick={() => onTabSelect('a-assigner')}>À assigner ({countAAssigner})</button>
           <button className={`tab ${activeTab === 'a-livrer' ? 'active' : ''}`} onClick={() => onTabSelect('a-livrer')}>À livrer ({countALivrer})</button>
           <button className={`tab ${activeTab === 'dossiers-traites' ? 'active' : ''}`} onClick={() => onTabSelect('dossiers-traites')}>Demande traité ({countCompleted})</button>
           <button className={`tab ${activeTab === 'dossiers-refuses' ? 'active' : ''}`} onClick={() => onTabSelect('dossiers-refuses')}>Demande refusé ({countRejected})</button>
         </div>
         <div className="table-container shadow-sm">
           <table className="data-table">
-            <thead><tr><th>No Dossier</th><th>Client</th><th>Type</th><th>Statut</th><th>Action</th></tr></thead>
+            <thead><tr>
+              <th>No Dossier</th>
+              <th>Client</th>
+              <th>Date de Demande</th>
+              <th>Heure</th>
+              <th>Dernière Modif</th>
+              <th>Type</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr></thead>
             <tbody>
-              {requestsLoading ? <tr><td colSpan={5}>Chargement...</td></tr> : tableData.length === 0 ? (
-                <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 20 }}>Aucune demande trouvée pour cette catégorie.</td></tr>
+              {requestsLoading ? <tr><td colSpan={8}>Chargement...</td></tr> : tableData.length === 0 ? (
+                <tr><td colSpan={8} style={{ textAlign: 'center', color: '#64748b', padding: 20 }}>Aucune demande trouvée pour cette catégorie.</td></tr>
               ) : tableData.map(row => {
                 const { label, type } = getStatusLabel(row.status);
-                // Read client name from direct column (backend extracts from JSONB) or details object
                 const details = row.details || {};
                 const clientFirstName = row.first_name || details.firstName || '';
                 const clientLastName = row.last_name || details.lastName || '';
+                const dateObj = new Date(row.created_at);
+                const dateCreated = dateObj.toLocaleDateString('fr-FR');
+                const timeCreated = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const dateModified = row.updated_at ? new Date(row.updated_at).toLocaleDateString('fr-FR') : '-';
                 return (
                   <tr key={row.id}>
-                    <td>D-{row.id}</td>
+                    <td>REQ-{String(row.id).padStart(3, '0')}</td>
                     <td>
-                      <span 
-                        className="clickable-client-name" 
+                      <span
+                        className="clickable-client-name"
                         onClick={() => fetchUserDetail(row.user_id)}
                         style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline' }}
                         title="Voir le profil"
@@ -721,9 +765,22 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
                         {clientFirstName} {clientLastName}
                       </span>
                     </td>
-                    <td>{row.type}</td>
-                    <td><span className="status" data-status={type}>{label}</span></td>
-                    <td><button className="action-btn" onClick={() => handleAnalyzeRequest(row)}>Analyser</button></td>
+                    <td>{dateCreated}</td>
+                    <td>{timeCreated}</td>
+                    <td>{dateModified}</td>
+                    <td>{(row.service_name || row.type || '').split('_').join(' ')}</td>
+                    <td><span className={`status-badge ${type}`}>{label}</span></td>
+                    <td>
+                      {row.status === 'to_assign' && (row.service_name || row.type || '').toLowerCase().includes('permis') ? (
+                        <button className="action-btn" style={{ background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', color: 'white', border: 'none' }} onClick={() => handleAnalyzeRequest(row)}>Assigner Permis</button>
+                      ) : row.status === 'to_deliver' ? (
+                        <button className="action-btn" style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', color: 'white', border: 'none' }} onClick={() => setDeliveryRequest(row)}>Livrer</button>
+                      ) : row.status === 'completed' ? (
+                        <button className="action-btn" style={{ background: '#64748b', color: 'white', border: 'none' }} onClick={() => handleAnalyzeRequest(row)}>Voir</button>
+                      ) : (
+                        <button className="action-btn" onClick={() => handleAnalyzeRequest(row)}>Analyser</button>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
@@ -742,16 +799,15 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       {confirmModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className={`p-6 ${
-              (confirmModal.status === 'validated' || confirmModal.status === 'completed' || confirmModal.status === 'to_deliver') ? 'bg-green-50' : 
-              confirmModal.status === 'paused' ? 'bg-amber-50' : 
-              confirmModal.status === 'processing' ? 'bg-blue-50' : 'bg-red-50'
-            }`}>
+            <div className={`p-6 ${(confirmModal.status === 'validated' || confirmModal.status === 'completed' || confirmModal.status === 'to_deliver') ? 'bg-green-50' :
+              confirmModal.status === 'paused' ? 'bg-amber-50' :
+                confirmModal.status === 'processing' ? 'bg-blue-50' : 'bg-red-50'
+              }`}>
               <div className="flex items-center gap-3 mb-2">
-                {(confirmModal.status === 'validated' || confirmModal.status === 'completed') ? <CheckCircle className="text-green-600" size={24} /> : 
-                 confirmModal.status === 'to_deliver' ? <Truck className="text-blue-600" size={24} /> :
-                 confirmModal.status === 'paused' ? <Pause className="text-amber-600" size={24} /> : 
-                 confirmModal.status === 'processing' ? <RefreshCw className="text-blue-600" size={24} /> : <X className="text-red-600" size={24} />}
+                {(confirmModal.status === 'validated' || confirmModal.status === 'completed') ? <CheckCircle className="text-green-600" size={24} /> :
+                  confirmModal.status === 'to_deliver' ? <Truck className="text-blue-600" size={24} /> :
+                    confirmModal.status === 'paused' ? <Pause className="text-amber-600" size={24} /> :
+                      confirmModal.status === 'processing' ? <RefreshCw className="text-blue-600" size={24} /> : <X className="text-red-600" size={24} />}
                 <h3 className="font-bold text-lg text-slate-800">{confirmModal.title}</h3>
               </div>
               <p className="text-slate-600 text-sm leading-relaxed">{confirmModal.message}</p>
@@ -759,12 +815,11 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
             </div>
             <div className="p-4 bg-slate-50 flex justify-end gap-3 border-t border-slate-100">
               <button className="px-4 py-2 text-slate-600 font-semibold hover:bg-slate-100 rounded-lg" onClick={() => setConfirmModal(null)}>Annuler</button>
-              <button className={`px-6 py-2 rounded-lg font-bold text-white shadow-sm transition-all active:scale-95 ${
-                (confirmModal.status === 'validated' || confirmModal.status === 'completed') ? 'bg-green-600 hover:bg-green-700' : 
+              <button className={`px-6 py-2 rounded-lg font-bold text-white shadow-sm transition-all active:scale-95 ${(confirmModal.status === 'validated' || confirmModal.status === 'completed') ? 'bg-green-600 hover:bg-green-700' :
                 confirmModal.status === 'to_deliver' ? 'bg-blue-700 hover:bg-blue-800' :
-                confirmModal.status === 'paused' ? 'bg-amber-500 hover:bg-amber-600' : 
-                confirmModal.status === 'processing' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'
-              }`} onClick={confirmStatusUpdate} disabled={loading}>{loading ? 'Traitement...' : 'Confirmer'}</button>
+                  confirmModal.status === 'paused' ? 'bg-amber-500 hover:bg-amber-600' :
+                    confirmModal.status === 'processing' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'
+                }`} onClick={confirmStatusUpdate} disabled={loading}>{loading ? 'Traitement...' : 'Confirmer'}</button>
             </div>
           </div>
         </div>
@@ -774,17 +829,17 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       {showEmployeeModal && (
         <div className="modal-overlay">
           <div className="modal-content small shadow-2xl">
-             <div className="modal-header"><h2>Nouvel Employé</h2><button className="close-btn" onClick={() => setShowEmployeeModal(false)}><X size={24} /></button></div>
-             <form onSubmit={handleAddEmployee} className="p-6">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="form-group"><label className="block text-sm font-bold mb-1">Prénom</label><input className="w-full p-2 border rounded" type="text" value={newEmployee.first_name} onChange={e => setNewEmployee({...newEmployee, first_name: e.target.value})} required /></div>
-                  <div className="form-group"><label className="block text-sm font-bold mb-1">Nom</label><input className="w-full p-2 border rounded" type="text" value={newEmployee.last_name} onChange={e => setNewEmployee({...newEmployee, last_name: e.target.value})} required /></div>
-                </div>
-                <div className="form-group mb-4"><label className="block text-sm font-bold mb-1">Email</label><input className="w-full p-2 border rounded" type="email" value={newEmployee.email} onChange={e => setNewEmployee({...newEmployee, email: e.target.value})} required /></div>
-                <div className="form-group mb-4"><label className="block text-sm font-bold mb-1">Mot de passe</label><input className="w-full p-2 border rounded" type="password" value={newEmployee.password} onChange={e => setNewEmployee({...newEmployee, password: e.target.value})} required /></div>
-                <div className="form-group mb-6"><label className="block text-sm font-bold mb-1">Bureau Affecté</label><select className="w-full p-2 border rounded" value={newEmployee.office_id} onChange={e => setNewEmployee({...newEmployee, office_id: e.target.value})} required><option value="">Sélectionner</option>{offices.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
-                <div className="flex justify-end gap-3"><button type="button" className="px-4 py-2 bg-slate-100 rounded" onClick={() => setShowEmployeeModal(false)}>Annuler</button><button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded font-bold">Enregistrer</button></div>
-             </form>
+            <div className="modal-header"><h2>Nouvel Employé</h2><button className="close-btn" onClick={() => setShowEmployeeModal(false)}><X size={24} /></button></div>
+            <form onSubmit={handleAddEmployee} className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="form-group"><label className="block text-sm font-bold mb-1">Prénom</label><input className="w-full p-2 border rounded" type="text" value={newEmployee.first_name} onChange={e => setNewEmployee({ ...newEmployee, first_name: e.target.value })} required /></div>
+                <div className="form-group"><label className="block text-sm font-bold mb-1">Nom</label><input className="w-full p-2 border rounded" type="text" value={newEmployee.last_name} onChange={e => setNewEmployee({ ...newEmployee, last_name: e.target.value })} required /></div>
+              </div>
+              <div className="form-group mb-4"><label className="block text-sm font-bold mb-1">Email</label><input className="w-full p-2 border rounded" type="email" value={newEmployee.email} onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })} required /></div>
+              <div className="form-group mb-4"><label className="block text-sm font-bold mb-1">Mot de passe</label><input className="w-full p-2 border rounded" type="password" value={newEmployee.password} onChange={e => setNewEmployee({ ...newEmployee, password: e.target.value })} required /></div>
+              <div className="form-group mb-6"><label className="block text-sm font-bold mb-1">Bureau Affecté</label><select className="w-full p-2 border rounded" value={newEmployee.office_id} onChange={e => setNewEmployee({ ...newEmployee, office_id: e.target.value })} required><option value="">Sélectionner</option>{offices.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select></div>
+              <div className="flex justify-end gap-3"><button type="button" className="px-4 py-2 bg-slate-100 rounded" onClick={() => setShowEmployeeModal(false)}>Annuler</button><button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded font-bold">Enregistrer</button></div>
+            </form>
           </div>
         </div>
       )}
@@ -806,27 +861,27 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
               </div>
               <div className="form-group mb-4">
                 <label className="block text-sm font-bold mb-1">Sujet</label>
-                <input 
-                  className="w-full p-2 border rounded" 
-                  type="text" 
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
                   placeholder="Ex: Documents manquants"
-                  value={messageData.subject} 
-                  onChange={e => setMessageData({...messageData, subject: e.target.value})} 
+                  value={messageData.subject}
+                  onChange={e => setMessageData({ ...messageData, subject: e.target.value })}
                 />
               </div>
               <div className="form-group mb-6">
                 <label className="block text-sm font-bold mb-1">Message</label>
-                <textarea 
-                  className="w-full p-2 border rounded h-32" 
+                <textarea
+                  className="w-full p-2 border rounded h-32"
                   placeholder="Tapez votre message ici..."
-                  value={messageData.message} 
-                  onChange={e => setMessageData({...messageData, message: e.target.value})}
+                  value={messageData.message}
+                  onChange={e => setMessageData({ ...messageData, message: e.target.value })}
                   required
                 />
               </div>
               <div className="flex justify-end gap-3">
                 <button className="px-4 py-2 bg-slate-100 rounded hover:bg-slate-200 transition-colors" onClick={() => setShowMessageModal(false)}>Annuler</button>
-                <button 
+                <button
                   className="px-6 py-2 bg-blue-600 text-white rounded font-bold shadow-md hover:bg-blue-700 transition-all flex items-center gap-2"
                   onClick={confirmSendMessage}
                   disabled={loading || !messageData.message}
@@ -837,6 +892,17 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delivery Modal */}
+      {deliveryRequest && (
+        <DeliveryModal
+          request={deliveryRequest}
+          user={user}
+          token={token}
+          onClose={() => setDeliveryRequest(null)}
+          onSuccess={fetchOfficeRequests}
+        />
       )}
     </>
   );

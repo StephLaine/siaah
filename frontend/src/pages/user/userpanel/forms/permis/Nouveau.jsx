@@ -80,14 +80,6 @@ export const FormFields = ({ formData, handleFieldChange, errors, licenseCats })
             </div>
             <div className="pro-row">
                 <div className="pro-field-group">
-                    <label>Groupe Sanguin <span className="required-mark">*</span></label>
-                    <select className={`pro-select ${errors.bloodGroup ? 'has-error' : ''}`} value={formData.bloodGroup} onChange={e => handleFieldChange('bloodGroup', e.target.value)}>
-                        <option value="">Sélectionner</option>
-                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                    </select>
-                    {errors.bloodGroup && <div className="field-error-msg"><AlertCircle size={14} /> {errors.bloodGroup}</div>}
-                </div>
-                <div className="pro-field-group">
                     <label>Lunettes ? <span className="required-mark">*</span></label>
                     <div className="radio-group-modern">
                         <label className={`radio-item ${formData.wearsGlasses ? 'active' : ''}`}><input type="radio" checked={formData.wearsGlasses === true} onChange={() => handleFieldChange('wearsGlasses', true)} /><span>Oui</span></label>

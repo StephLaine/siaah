@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   CreditCard, 
   Calendar, 
@@ -16,44 +17,90 @@ import './MonPermis.css';
 
 const MonPermis = () => {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [activeLicense, setActiveLicense] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // For now using mock data as requested
+    if (!user?.id) return;
     const loadData = async () => {
       setLoading(true);
       try {
-        // Simulating API call
-        setTimeout(() => {
-          const mockLicense = {
-            number: 'P-22-09876',
-            category: 'Type B',
-            lastName: user?.last_name || 'Dieudonne',
-            firstName: user?.first_name || 'Sarah',
-            issueDate: '15/05/2023',
-            expiryDate: '15/05/2028',
-            status: 'Active' // Active, Expire, Hors circulation
-          };
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          const localToken = localStorage.getItem('token');
+          if (localToken) {
+            headers['Authorization'] = `Bearer ${localToken}`;
+          }
+        }
+        const res = await fetch(`/api/permits/user/${user.id}`, { headers });
+        const resData = await res.json();
+        if (resData.status === 'success') {
+          const permits = resData.data || [];
+          if (permits.length > 0) {
+            // Find the most recent active (assigned & not expired) permit,
+            // or fall back to the first permit (most recent assigned).
+            const sortedPermits = [...permits].sort((a, b) => new Date(b.assigned_at) - new Date(a.assigned_at));
+            
+            const activeOrLatest = sortedPermits.find(p => {
+              const isExpired = new Date(p.expiry_date) < new Date();
+              return p.status === 'assigned' && !isExpired;
+            }) || sortedPermits[0];
 
-          const mockHistory = [
-            { id: 1, number: 'P-18-01234', category: 'Type B', issueDate: '12/04/2018', expiryDate: '12/04/2023', status: 'Expire' }
-          ];
+            const formatPermit = (p) => {
+              const isExpired = new Date(p.expiry_date) < new Date();
+              const isRevoked = p.status === 'revoked';
+              let displayStatus = 'Active';
+              if (isRevoked) {
+                displayStatus = 'Hors circulation';
+              } else if (isExpired) {
+                displayStatus = 'Expire';
+              }
+              
+              const formatDateStr = (dateStr) => {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+              };
 
-          setActiveLicense(mockLicense);
-          setHistory(mockHistory);
-          setLoading(false);
-        }, 800);
+              return {
+                id: p.link_id,
+                number: p.permit_number,
+                category: p.request_details?.licenseCategory || 'N/A',
+                lastName: user?.last_name || '',
+                firstName: user?.first_name || '',
+                issueDate: formatDateStr(p.issuance_date),
+                expiryDate: formatDateStr(p.expiry_date),
+                status: displayStatus
+              };
+            };
+
+            setActiveLicense(formatPermit(activeOrLatest));
+            setHistory(sortedPermits.map(formatPermit));
+          } else {
+            setActiveLicense(null);
+            setHistory([]);
+          }
+        } else {
+          setError(resData.message || "Impossible de charger vos informations de permis.");
+        }
       } catch (err) {
+        console.error('Error fetching user permits:', err);
         setError("Impossible de charger vos informations de permis.");
+      } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [user]);
+  }, [user, token]);
 
   const getStatusStyle = (status) => {
     switch(status.toLowerCase()) {
@@ -196,7 +243,7 @@ const MonPermis = () => {
           <CreditCard size={64} color="#94a3b8" />
           <h2>Aucun permis actif</h2>
           <p>Vous n'avez pas encore de permis de conduire attribué ou votre dossier est en cours de traitement.</p>
-          <button className="btn-start-request">Démarrer une demande</button>
+          <button className="btn-start-request" onClick={() => navigate('/user/nouvelle-demande?type=permis&op=nouveau')}>Démarrer une demande</button>
         </div>
       )}
 

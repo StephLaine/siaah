@@ -68,7 +68,7 @@ const PrintablePDFFormPreview = ({ req, details }) => {
             <h3 className="text-lg font-black text-blue-700 uppercase tracking-wider mb-2">Formulaire de Demande</h3>
             <div className="inline-block bg-slate-100 border border-slate-200 px-3 py-1.5 rounded text-left">
                <p className="text-[11px] text-slate-500 font-bold uppercase mb-0.5">Dossier N°</p>
-               <p className="text-[14px] text-slate-800 font-mono font-bold leading-none">{req.id || '---'}</p>
+               <p className="text-[14px] text-slate-800 font-mono font-bold leading-none">REQ-{String(req.id || '').padStart(3, '0')}</p>
             </div>
          </div>
       </div>
@@ -260,7 +260,7 @@ const FormDocumentPreview = ({ req, details, isModal = false }) => {
       {!isModal && (
          <div className="grid grid-cols-2 gap-4 mb-8">
            <div className="bg-[#e9eff5] px-4 py-3 rounded text-[15px] font-bold text-slate-800 border-b-[3px] border-[#3b82f6]">
-             Numero Demande : {req.id ? `D-${req.id}` : '---'}
+             Numero Demande : {req.id ? `REQ-${String(req.id).padStart(3, '0')}` : '---'}
            </div>
            <div className="bg-[#e9eff5] px-4 py-3 rounded text-[15px] font-bold text-slate-800 border-b-[3px] border-[#3b82f6]">
              Etat : {req.status || 'En Analyse'}
@@ -477,7 +477,7 @@ const AnalysisPanel = ({ requestData, onBack, onValidate, onReject, onMessage, t
   return (
     <div className="ra-container relative">
       <div className="ra-breadcrumb-bar">
-        <span>Administration &gt; Analyse &gt; #{req.id || '---'}</span>
+         <span>Administration &gt; Analyse &gt; REQ-{String(req.id || '').padStart(3, '0')}</span>
       </div>
 
       <div className="ra-top-header">

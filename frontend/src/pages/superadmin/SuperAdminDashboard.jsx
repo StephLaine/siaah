@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Building2, Users, MapPin, FileCheck, TrendingUp, Activity, AlertCircle, Layers } from 'lucide-react';
-import { 
+import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
@@ -20,7 +20,7 @@ const StatCard = ({ icon, label, value, color, trend }) => (
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#7c3aed', '#6366f1', '#ef4444'];
 
 const SuperAdminDashboard = () => {
-    const [stats, setStats] = useState({ 
+    const [stats, setStats] = useState({
         totalEntities: 0, totalUsers: 0, totalEmployees: 0, totalOffices: 0,
         deptData: [], evolutionData: [], officePieData: []
     });
@@ -46,9 +46,9 @@ const SuperAdminDashboard = () => {
     }, [period]);
 
     // Provide defaults if data is missing
-    const deptData = stats.deptData?.length > 0 ? stats.deptData : [{name: 'Aucune donnée', services: 0}];
-    const evolutionData = stats.evolutionData?.length > 0 ? stats.evolutionData : [{label: 'N/A', users: 0}];
-    const officePieData = stats.officePieData?.length > 0 ? stats.officePieData : [{name: 'Aucune donnée', value: 1}];
+    const deptData = stats.deptData?.length > 0 ? stats.deptData : [{ name: 'Aucune donnée', services: 0 }];
+    const evolutionData = stats.evolutionData?.length > 0 ? stats.evolutionData : [{ label: 'N/A', users: 0 }];
+    const officePieData = stats.officePieData?.length > 0 ? stats.officePieData : [{ name: 'Aucune donnée', value: 1 }];
 
     return (
         <div className="sa-page sa-page-full">
@@ -109,13 +109,13 @@ const SuperAdminDashboard = () => {
                     </div>
                     <div style={{ height: 320, width: '100%', minHeight: 0, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.officePieData?.length > 0 ? stats.officePieData : [{name: 'Aucun', value: 0}]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <BarChart data={stats.officePieData?.length > 0 ? stats.officePieData : [{ name: 'Aucun', value: 0 }]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                <Tooltip 
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} 
-                                    cursor={{fill: '#f8fafc'}}
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                    cursor={{ fill: '#f8fafc' }}
                                 />
                                 <Bar dataKey="value" name="Nombre de bureaux" fill="#3b82f6" radius={[6, 6, 0, 0]} />
                             </BarChart>
@@ -140,14 +140,14 @@ const SuperAdminDashboard = () => {
                             <AreaChart data={evolutionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.1}/>
-                                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                <Tooltip 
+                                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                                <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                                 />
                                 <Area type="monotone" dataKey="users" name="Inscriptions" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" />
@@ -158,7 +158,7 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="sa-charts-row" style={{ marginBottom: '2rem' }}>
-                 <div className="sa-info-card sa-chart-card" style={{ flex: '0.4' }}>
+                <div className="sa-info-card sa-chart-card" style={{ flex: '0.4' }}>
                     <div className="sa-chart-header">
                         <h3><Users size={18} /> Utilisateurs par Dép.</h3>
                         <p>Répartition géographique des usagers</p>
@@ -167,7 +167,7 @@ const SuperAdminDashboard = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={stats.usersByDept?.length > 0 ? stats.usersByDept : [{name: 'Aucun', value: 1}]}
+                                    data={stats.usersByDept?.length > 0 ? stats.usersByDept : [{ name: 'Aucun', value: 1 }]}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -180,7 +180,7 @@ const SuperAdminDashboard = () => {
                                     ))}
                                 </Pie>
                                 <Tooltip />
-                                <Legend verticalAlign="bottom" height={36}/>
+                                <Legend verticalAlign="bottom" height={36} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

@@ -1,11 +1,13 @@
-import React from 'react';
-import { CreditCard, Info, FileSignature, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { CreditCard, Info, FileSignature, AlertCircle, FileText, Search } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 export const labels = {
     currentLicenseNumber: 'Numéro du permis',
     currentLicenseIssueDate: 'Date de délivrance',
     currentLicenseExpiryDate: 'Date d\'expiration',
     currentLicenseCategories: 'Catégories possédées',
+    licenseCategory: 'Catégorie de Permis',
     replacementMotive: 'Motif de la demande',
     declaredAccurate: 'Déclaration d\'exactitude'
 };
@@ -14,12 +16,79 @@ export const required = [
     'currentLicenseNumber', 
     'currentLicenseIssueDate', 
     'currentLicenseExpiryDate', 
+    'licenseCategory',
     'replacementMotive', 
     'declaredAccurate'
 ];
 
-export const FormFields = ({ formData, handleFieldChange, errors }) => {
-    const motives = [
+export const FormFields = ({ formData, handleFieldChange, errors, licenseCats, initialUser }) => {
+  const [lookupError, setLookupError] = useState(null);
+
+  
+
+  useEffect(() => {
+    if (lookupError) {
+      toast.error(lookupError);
+      setLookupError(null);
+    }
+  }, [lookupError]);  // Function to fetch permit data
+  const fetchPermit = async () => {
+    if (!formData.currentLicenseNumber) {
+      setLookupError(null);
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/permits/search/${formData.currentLicenseNumber}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.status === 404) {
+        setLookupError("Ce numéro de permis n'existe pas.");
+        return;
+      }
+      if (data.status === 'success' && data.data) {
+        const permit = data.data;
+        if (permit.user_id && permit.user_id !== initialUser?.id) {
+          setLookupError('Ce numéro de permis ne vous appartient pas.');
+          return;
+        }
+        setLookupError(null);
+        if (!formData.currentLicenseIssueDate) handleFieldChange('currentLicenseIssueDate', permit.issuance_date?.split('T')[0] || '');
+        if (!formData.currentLicenseExpiryDate) handleFieldChange('currentLicenseExpiryDate', permit.expiry_date?.split('T')[0] || '');
+        if (!formData.currentLicenseCategories) {
+          const cats = permit.request_details?.licenseCategory || [];
+          handleFieldChange('currentLicenseCategories', Array.isArray(cats) ? cats.join(', ') : cats);
+        }
+        if (!formData.licenseCategory && permit.request_details?.licenseCategory) {
+          const cat = Array.isArray(permit.request_details.licenseCategory) ? permit.request_details.licenseCategory[0] : permit.request_details.licenseCategory;
+          handleFieldChange('licenseCategory', cat);
+        }
+      }
+    } catch (e) {
+      console.error('Autofill error', e);
+      setLookupError('Erreur lors de la recherche du permis.');
+    }
+  };
+
+  // Validate license number format
+  const validateLicense = () => {
+    const pattern = /^HT-\d{2}-\d{2}-\d{6}$/;
+    if (!pattern.test(formData.currentLicenseNumber)) {
+      const msg = "Le numéro de permis doit être au format HT-xx-xx-xxxxxx";
+      setLookupError(msg);
+      toast.error(msg);
+      return false;
+    }
+    return true;
+  };
+
+  // Handle search button click
+  const handleSearch = () => {
+    if (validateLicense()) {
+      fetchPermit();
+    }
+  };    const motives = [
         "Expiration du permis",
         "Permis perdu",
         "Permis volé",
@@ -33,15 +102,31 @@ export const FormFields = ({ formData, handleFieldChange, errors }) => {
                 <h5><CreditCard size={18} style={{ marginBottom: '-4px', marginRight: '8px' }} /> 3. Informations sur le permis actuel</h5>
             </div>
             <div className="pro-field-group" style={{ marginTop: '15px' }}>
-                <label>Numéro du permis <span className="required-mark">*</span></label>
-                <input 
-                    type="text" 
-                    className={`pro-input ${errors.currentLicenseNumber ? 'has-error' : ''}`} 
-                    placeholder="P-00-00000"
-                    value={formData.currentLicenseNumber}
-                    onChange={e => handleFieldChange('currentLicenseNumber', e.target.value)}
+            <label>Numéro du permis <span className="required-mark">*</span></label>
+            <div className="flex items-center gap-2" style={{ marginTop: '4px' }}>
+                <input
+                  type="text"
+                  className={`pro-input ${errors.currentLicenseNumber ? 'has-error' : ''}`}
+                  placeholder="HT-12-34-567890"
+                  value={formData.currentLicenseNumber}
+                  onChange={e => handleFieldChange('currentLicenseNumber', e.target.value)}
+                  onBlur={validateLicense}
                 />
-                {errors.currentLicenseNumber && <div className="field-error-msg"><AlertCircle size={14} /> {errors.currentLicenseNumber}</div>}
+              <button
+                type="button"
+                className="pro-button flex items-center gap-1"
+                onClick={handleSearch}
+              >
+                <Search size={16} />
+                Rechercher
+              </button>
+            </div>
+
+                {lookupError && (
+                  <div className="field-error-msg">
+                    <AlertCircle size={14} /> {lookupError}
+                  </div>
+                )}
             </div>
 
             <div className="pro-row">
@@ -64,6 +149,29 @@ export const FormFields = ({ formData, handleFieldChange, errors }) => {
                     value={formData.currentLicenseCategories}
                     onChange={e => handleFieldChange('currentLicenseCategories', e.target.value)}
                 />
+            </div>
+
+            <div className="inner-form-subheading" style={{ marginTop: '20px' }}>
+                <h5><FileText size={18} style={{ marginBottom: '-4px', marginRight: '8px' }} /> Type de permis demandé</h5>
+            </div>
+            <div className="pro-field-group" style={{ marginTop: '15px' }}>
+                <label>Catégorie <span className="required-mark">*</span></label>
+                <select className={`pro-select ${errors.licenseCategory ? 'has-error' : ''}`} value={formData.licenseCategory || ''} onChange={e => handleFieldChange('licenseCategory', e.target.value)}>
+                    <option value="">Sélectionner</option>
+                    {(licenseCats || []).map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
+                </select>
+                {errors.licenseCategory && <div className="field-error-msg"><AlertCircle size={14} /> {errors.licenseCategory}</div>}
+            </div>
+
+            <div className="pro-field-group" style={{ marginTop: '12px' }}>
+                <label>Type de permis</label>
+                <select className="pro-select" value={formData.licenseType || ''} onChange={e => handleFieldChange('licenseType', e.target.value)}>
+                    <option value="">Sélectionner</option>
+                    <option value="Provisoire">Provisoire</option>
+                    <option value="Définitif">Définitif</option>
+                    <option value="Temporaire">Temporaire</option>
+                    <option value="International">International</option>
+                </select>
             </div>
 
             <div className="inner-form-subheading" style={{ marginTop: '25px' }}>

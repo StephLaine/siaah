@@ -67,6 +67,8 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
       subItems: [
         { id: 'reception-demandes', label: 'Nouvelles Demandes', badge: counts.pending },
         { id: 'documents-analyse',  label: 'Analyse En Cours', badge: counts.processing },
+        { id: 'a-assigner', label: 'À assigner' },
+        { id: 'a-livrer', label: 'À livrer' },
         { id: 'dossiers-traites',   label: 'Dossiers Traités' },
         { id: 'dossiers-refuses',   label: 'Dossiers Refusés' },
       ]
@@ -81,6 +83,8 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
         { id: 'dossier-traite-permis',   label: 'Dossier traité' },
         { id: 'dossier-refuse-permis',   label: 'Dossier Refusé' },
         { id: 'paiement-permis',         label: 'Paiement', badge: counts.validated },
+        { id: 'a-assigner-permis', label: 'À assigner' },
+        { id: 'a-livrer-permis', label: 'À livrer' },
         ...(user?.role_id === 1 ? [{ id: 'config-categories', label: 'Config Catégories' }] : [])
       ]
     },

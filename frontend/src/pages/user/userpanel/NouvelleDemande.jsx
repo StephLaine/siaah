@@ -90,7 +90,15 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
     const [vehMakes, setVehMakes] = React.useState([]);
     const [vehModels, setVehModels] = React.useState([]);
     const [vehColors, setVehColors] = React.useState([]);
-    const [licenseCats, setLicenseCats] = React.useState([]);
+    const HAITI_LICENSE_CATS = [
+        { id: 'A', code: 'A', name: 'A — Motocyclette' },
+        { id: 'B', code: 'B', name: 'B — Véhicule léger (voiture)' },
+        { id: 'C', code: 'C', name: 'C — Camion (poids lourd)' },
+        { id: 'D', code: 'D', name: 'D — Transport en commun (bus)' },
+        { id: 'E', code: 'E', name: 'E — Véhicule avec remorque' },
+        { id: 'F', code: 'F', name: 'F — Engin agricole / spécial' },
+    ];
+    const [licenseCats, setLicenseCats] = React.useState(HAITI_LICENSE_CATS);
 
     // Fetch offices and services from DB
     React.useEffect(() => {
@@ -123,7 +131,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
 
         fetch('/api/licenses/refs/categories', { headers: h })
             .then(r => r.json())
-            .then(data => { if (data.status === 'success') setLicenseCats(data.data); })
+            .then(data => { if (data.status === 'success' && data.data && data.data.length > 0) setLicenseCats(data.data); })
             .catch(err => console.error('Error fetching license categories:', err));
     }, []);
 
@@ -579,7 +587,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
             setErrors(newErrors);
 
             // Define field groups for each accordion
-            const personalFields = ['lastName', 'firstName', 'sexe', 'maritalStatus', 'dob', 'pob', 'nationality', 'nifCin'];
+            const personalFields = ['lastName', 'firstName', 'sexe', 'maritalStatus', 'dob', 'pob', 'nationality', 'nifCin', 'bloodGroup'];
             const locationFields = ['country', 'otherCountry', 'state', 'city', 'houseNumber', 'email', 'phone'];
 
             // Expand accordions that have errors
@@ -1054,14 +1062,18 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                                 />
                                                             </div>
                                                             <div className="pro-field-group" id="field-bloodGroup">
-                                                                <label>Groupe Sanguin</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="pro-input"
-                                                                    placeholder="Ex: A+"
-                                                                    value={formData.bloodGroup}
+                                                                <label>Groupe Sanguin {isPermis(selectedService) && <span className="required-mark">*</span>}</label>
+                                                                <select
+                                                                    className={`pro-select ${errors.bloodGroup ? 'has-error' : ''}`}
+                                                                    value={formData.bloodGroup || ''}
                                                                     onChange={e => handleFieldChange('bloodGroup', e.target.value)}
-                                                                />
+                                                                >
+                                                                    <option value="">Sélectionner</option>
+                                                                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
+                                                                        <option key={bg} value={bg}>{bg}</option>
+                                                                    ))}
+                                                                </select>
+                                                                {errors.bloodGroup && <div className="field-error-msg"><AlertCircle size={14} /> {errors.bloodGroup}</div>}
                                                             </div>
                                                         </div>
                                                     </div>

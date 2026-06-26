@@ -3,6 +3,7 @@ import AppRoutes from './routes';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import './index.css';
+import { Toaster } from 'react-hot-toast';
 
 const AppContent = () => {
   const { loading } = useAuth();
@@ -16,11 +17,14 @@ const AppContent = () => {
 
 function App() {
   return (
+    <>
+      <Toaster position="top-right" />
       <AuthProvider>
         <LanguageProvider>
           <AppContent />
         </LanguageProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </>
   );
 }
 
