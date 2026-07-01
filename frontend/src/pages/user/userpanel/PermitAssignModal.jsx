@@ -31,8 +31,8 @@ const PermitAssignModal = ({ request, token, onClose, onSuccess }) => {
   // Fetch permit details based on number
   const fetchPermit = async () => {
     if (!form.permit_number.trim()) return setError('Entrez un numéro de permis à rechercher.');
-    const pattern = /^HT-\d{2}-\d{2}-\d{7}$/;
-    if (!pattern.test(form.permit_number.trim())) return setError('Format de permis invalide pour la recherche.');
+    const pattern = /^HT-\d{2}-\d{2}-\d{6,7}$/;
+    if (!pattern.test(form.permit_number.trim())) return setError('Format de permis invalide pour la recherche (HT-xx-xx-xxxxxx ou HT-xx-xx-xxxxxxx).');
     try {
       const res = await axios.get(`/api/permits/search/${form.permit_number.trim()}`);
       const p = res.data.data;
@@ -73,10 +73,10 @@ const PermitAssignModal = ({ request, token, onClose, onSuccess }) => {
 
     try {
 
-      // Validate permit number format (HT-xx-xx-xxxxxxx)
-      const pattern = /^HT-\d{2}-\d{2}-\d{7}$/;
+      // Validate permit number format (HT-xx-xx-xxxxxx or HT-xx-xx-xxxxxxx)
+      const pattern = /^HT-\d{2}-\d{2}-\d{6,7}$/;
       if (!pattern.test(form.permit_number.trim())) {
-        setError('Le numéro de permis doit être au format HT-xx-xx-xxxxxxx');
+        setError('Le numéro de permis doit être au format HT-xx-xx-xxxxxx ou HT-xx-xx-xxxxxxx');
         return;
       }
       setLoading(true);
@@ -208,7 +208,7 @@ const PermitAssignModal = ({ request, token, onClose, onSuccess }) => {
                       type="text"
                       value={form.permit_number}
                       onChange={e => setForm(f => ({ ...f, permit_number: e.target.value }))}
-                      placeholder="HT-xx-xx-xxxxxxx"
+                      placeholder="HT-xx-xx-xxxxxx(x)"
                       required
                       style={{
                         flex: 1,

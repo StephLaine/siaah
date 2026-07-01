@@ -19,15 +19,15 @@ export const required = [
     'declaredAccurate'
 ];
 
-const Renouvellement = ({ formData, handleFieldChange, errors, licenseCats }) => {
+export const FormFields = ({ formData, handleFieldChange, errors, licenseCats, initialUser }) => {
   const [suggestions, setSuggestions] = React.useState([]);
   const [lookupError, setLookupError] = React.useState(null);
 
-  // Validate licence number format (HT-xx-xx-xxxxxx)
+  // Validate licence number format (HT-xx-xx-xxxxxx or HT-xx-xx-xxxxxxx)
   const validateLicense = () => {
-    const pattern = /^HT-\d{2}-\d{2}-\d{6}$/;
-    if (!pattern.test(formData.currentLicenseNumber)) {
-      const msg = 'Le numéro de permis doit être au format HT-xx-xx-xxxxxx';
+    const pattern = /^HT-\d{2}-\d{2}-\d{6,7}$/;
+    if (!formData.currentLicenseNumber || !pattern.test(formData.currentLicenseNumber.trim())) {
+      const msg = 'Le numéro de permis doit être au format HT-xx-xx-xxxxxx ou HT-xx-xx-xxxxxxx';
       setLookupError(msg);
       toast.error(msg);
       return false;
@@ -41,31 +41,41 @@ const Renouvellement = ({ formData, handleFieldChange, errors, licenseCats }) =>
       setLookupError(null);
       return;
     }
+    // RESET FIELDS & VERIFIED FLAG AT START OF SEARCH
+    handleFieldChange('currentLicenseVerified', false);
+    handleFieldChange('currentLicenseIssueDate', '');
+    handleFieldChange('currentLicenseExpiryDate', '');
+    handleFieldChange('currentLicenseCategories', '');
+    handleFieldChange('licenseCategory', '');
+
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/permits/search/${formData.currentLicenseNumber}`, {
+      const res = await fetch(`/api/permits/search/${formData.currentLicenseNumber.trim().toUpperCase()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.status === 404) {
-        setLookupError('Ce numéro de permis n\'existe pas.');
+        setLookupError("Ce numéro de permis n'existe pas.");
+        return;
+      }
+      if (res.status === 403) {
+        setLookupError(data.message || "Ce numéro de permis ne vous appartient pas.");
         return;
       }
       if (data.status === 'success' && data.data) {
         const permit = data.data;
-        // Ownership check – you may adapt the logic if needed
-        if (permit.user_id && permit.user_id !== formData.userId) {
+        // Ownership check
+        if (permit.user_id && permit.user_id !== initialUser?.id) {
           setLookupError('Ce numéro de permis ne vous appartient pas.');
           return;
         }
         setLookupError(null);
-        if (!formData.currentLicenseIssueDate) handleFieldChange('currentLicenseIssueDate', permit.issuance_date?.split('T')[0] || '');
-        if (!formData.currentLicenseExpiryDate) handleFieldChange('currentLicenseExpiryDate', permit.expiry_date?.split('T')[0] || '');
-        if (!formData.currentLicenseCategories) {
-          const cats = permit.request_details?.licenseCategory || [];
-          handleFieldChange('currentLicenseCategories', Array.isArray(cats) ? cats.join(', ') : cats);
-        }
-        if (!formData.licenseCategory && permit.request_details?.licenseCategory) {
+        handleFieldChange('currentLicenseVerified', true);
+        handleFieldChange('currentLicenseIssueDate', permit.issuance_date?.split('T')[0] || '');
+        handleFieldChange('currentLicenseExpiryDate', permit.expiry_date?.split('T')[0] || '');
+        const cats = permit.request_details?.licenseCategory || [];
+        handleFieldChange('currentLicenseCategories', Array.isArray(cats) ? cats.join(', ') : cats);
+        if (permit.request_details?.licenseCategory) {
           const cat = Array.isArray(permit.request_details.licenseCategory) ? permit.request_details.licenseCategory[0] : permit.request_details.licenseCategory;
           handleFieldChange('licenseCategory', cat);
         }
@@ -82,6 +92,17 @@ const Renouvellement = ({ formData, handleFieldChange, errors, licenseCats }) =>
     }
   };
 
+  // onChange handler for license number input (reset fields)
+  const handleLicenseNumberChange = (e) => {
+    const val = e.target.value;
+    handleFieldChange('currentLicenseNumber', val);
+    handleFieldChange('currentLicenseVerified', false);
+    handleFieldChange('currentLicenseIssueDate', '');
+    handleFieldChange('currentLicenseExpiryDate', '');
+    handleFieldChange('currentLicenseCategories', '');
+    handleFieldChange('licenseCategory', '');
+  };
+
   return (
     <>
       <div className="pro-field-group" style={{ marginTop: '15px' }}>
@@ -92,7 +113,7 @@ const Renouvellement = ({ formData, handleFieldChange, errors, licenseCats }) =>
             className="pro-input"
             placeholder="HT-12-34-567890"
             value={formData.currentLicenseNumber || ''}
-            onChange={e => handleFieldChange('currentLicenseNumber', e.target.value)}
+            onChange={handleLicenseNumberChange}
             onBlur={validateLicense}
           />
           <button type="button" className="pro-button flex items-center gap-1" onClick={handleSearch}>
@@ -160,4 +181,4 @@ const Renouvellement = ({ formData, handleFieldChange, errors, licenseCats }) =>
         </>
     );
 };
-export default Renouvellement;
+export default FormFields;

@@ -138,9 +138,17 @@ const getPermitByNumber = async (req, res) => {
             [number.trim().toUpperCase()]
         );
         if (result.rows.length === 0) {
-            return res.status(404).json({ status: 'error', message: 'Permis introuvable' });
+            return res.status(404).json({ status: 'error', message: 'Ce numéro de permis n\'existe pas.' });
         }
-        res.json({ status: 'success', data: result.rows[0] });
+        
+        const permit = result.rows[0];
+        
+        // Enforce ownership check for regular users (role 8)
+        if (req.user.role_id === 8 && permit.user_id !== req.user.id) {
+            return res.status(403).json({ status: 'error', message: 'Ce numéro de permis ne vous appartient pas.' });
+        }
+        
+        res.json({ status: 'success', data: permit });
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
     }

@@ -583,6 +583,25 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
             }
         }
 
+        // Custom validation check for driving permits verification status
+        if (isPermis(selectedService) && selectedOperation) {
+            const op = operations.find(o => String(o.id) === String(selectedOperation));
+            const opName = op?.name.toLowerCase() || '';
+            const isRemplac = opName.includes('remplac');
+            const isRenouvel = opName.includes('renouvel');
+            const isCorriger = opName.includes('corriger') || opName.includes('correction');
+
+            if (isRemplac || isRenouvel) {
+                if (!formData.currentLicenseVerified) {
+                    newErrors.currentLicenseNumber = "Veuillez rechercher et valider un numéro de permis valide avant de continuer.";
+                }
+            } else if (isCorriger) {
+                if (!formData.currentLicenseVerified) {
+                    newErrors.licenseNumber = "Veuillez rechercher et valider un numéro de permis valide avant de continuer.";
+                }
+            }
+        }
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
 
@@ -1302,6 +1321,7 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                                         vehModels={vehModels}
                                                                         vehColors={vehColors}
                                                                         licenseCats={licenseCats}
+                                                                        initialUser={user}
                                                                     />;
                                                                 }
                                                                 return (

@@ -14,7 +14,7 @@ router.post('/assign', roleMiddleware([1, 2, 3, 6]), c.assignPermit);
 router.get('/', roleMiddleware([1, 2, 3, 6]), c.getAllPermits);
 
 // Search a permit by its number
-router.get('/search/:number', roleMiddleware([1, 2, 3, 6]), c.getPermitByNumber);
+router.get('/search/:number', roleMiddleware([1, 2, 3, 6, 8]), c.getPermitByNumber);
 
 // Revoke a permit link
 router.patch('/revoke/:linkId', roleMiddleware([1, 2]), c.revokePermit);

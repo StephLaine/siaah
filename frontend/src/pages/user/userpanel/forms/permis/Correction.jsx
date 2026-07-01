@@ -16,7 +16,7 @@ export const required = [
     'declaredAccurate'
 ];
 
-export const FormFields = ({ formData, handleFieldChange, errors, licenseCats }) => {
+export const FormFields = ({ formData, handleFieldChange, errors, licenseCats, initialUser }) => {
   const [lookupError, setLookupError] = useState(null);
 
   // Toast any lookup error
@@ -35,27 +35,32 @@ export const FormFields = ({ formData, handleFieldChange, errors, licenseCats })
         return;
       }
       
-      const permitRegex = /^HT-\d{2}-\d{2}-\d{6}$/;
-      if (!permitRegex.test(formData.licenseNumber)) {
-        setLookupError('Format du numéro de permis invalide. Utilisez HT-xx-xx-xxxxxx');
+      const permitRegex = /^HT-\d{2}-\d{2}-\d{6,7}$/;
+      if (!permitRegex.test(formData.licenseNumber.trim())) {
+        setLookupError('Format du numéro de permis invalide. Utilisez HT-xx-xx-xxxxxx ou HT-xx-xx-xxxxxxx');
         return;
       }
 
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`/api/permits/search/${formData.licenseNumber}`, {
+        const res = await fetch(`/api/permits/search/${formData.licenseNumber.trim().toUpperCase()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (res.status === 404) {
-          setLookupError('Ce numéro de permis n\'existe pas.');
+          setLookupError("Ce numéro de permis n'existe pas.");
+          return;
+        }
+        if (res.status === 403) {
+          setLookupError(data.message || "Ce numéro de permis ne vous appartient pas.");
           return;
         }
         if (data.status === 'success' && data.data) {
           const permit = data.data;
-          // Ownership check (assuming permit.user_id exists)
-          if (permit.user_id && permit.user_id !== undefined) {
-            // We don't have initialUser here; skip ownership validation for correction
+          // Ownership check
+          if (permit.user_id && permit.user_id !== initialUser?.id) {
+            setLookupError('Ce numéro de permis ne vous appartient pas.');
+            return;
           }
           setLookupError(null);
           // Populate category if empty
@@ -70,7 +75,7 @@ export const FormFields = ({ formData, handleFieldChange, errors, licenseCats })
       }
     };
     fetchPermit();
-  }, [formData.licenseNumber]);
+  }, [formData.licenseNumber, initialUser]);
     return (
         <>
             <div className="inner-form-subheading">
@@ -84,7 +89,13 @@ export const FormFields = ({ formData, handleFieldChange, errors, licenseCats })
                         className={`pro-input ${errors.licenseNumber ? 'has-error' : ''}`} 
                         placeholder="Ex: 000-000-000-0"
                         value={formData.licenseNumber}
-                        onChange={e => handleFieldChange('licenseNumber', e.target.value)}
+                        onChange={e => {
+                          const val = e.target.value;
+                          handleFieldChange('licenseNumber', val);
+                          // Reset verification and dependent fields
+                          handleFieldChange('currentLicenseVerified', false);
+                          handleFieldChange('licenseCategory', '');
+                        }}
                     />
                     {lookupError && (
                       <div className="field-error-msg">
