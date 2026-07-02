@@ -6,8 +6,10 @@ services:
 
     # Build: install deps for both frontend & backend, then build the React app
     buildCommand: |
-      cd frontend && npm ci && npm run build
-      cd ../backend && npm ci
+      cd frontend && npm ci && npm run build && cd ..
+      cd backend && npm ci
+      echo "--- Verifying frontend build ---"
+      ls frontend/dist/index.html
 
     # Start: run the Express server (it serves both the API and the built frontend)
     startCommand: node backend/src/server.js

@@ -7,6 +7,7 @@ import {
 import './RequestAnalysis.css';
 import PermitAssignModal from './PermitAssignModal';
 import DeliveryModal from './DeliveryModal';
+import { backendUrl } from '../../../apiConfig';
 
 const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, onProcessing, onDeliver, onMessage, token, user }) => {
   const [fullRequest, setFullRequest] = useState(null);
@@ -17,6 +18,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
   const [showPermitModal, setShowPermitModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [docToView, setDocToView] = useState(null);
 
   // Detect request states
   const isPermisRequest = (requestData?.type || '').toLowerCase().includes('permis');
@@ -32,10 +34,45 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
 
   const getStatusLabel = (status) => statusLabels[status] || status || '—';
 
-  const handleViewDoc = (path) => {
-    if (!path) return;
-    window.open(`/uploads/${path}`, '_blank');
+  const [docAvailability, setDocAvailability] = useState('checking');
+
+  const getDocUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const base = backendUrl || 'http://localhost:5003';
+    return `${base}/uploads/${path}`;
   };
+
+  const handleViewDoc = (doc) => {
+    if (!doc) return;
+    setDocToView(doc);
+  };
+
+  useEffect(() => {
+    if (!docToView || !docToView.path) {
+      setDocAvailability('available');
+      return;
+    }
+
+    const checkFile = async () => {
+      setDocAvailability('checking');
+      const url = getDocUrl(docToView.path);
+      
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        if (response.status === 404) {
+          setDocAvailability('not_found');
+        } else {
+          setDocAvailability('available');
+        }
+      } catch (err) {
+        // En cas d'erreur CORS ou réseau, on assume disponible (pour éviter les faux négatifs)
+        setDocAvailability('available'); 
+      }
+    };
+
+    checkFile();
+  }, [docToView]);
 
   useEffect(() => {
     if (!requestData?.id || !token) return;
@@ -140,15 +177,15 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
   };
 
   const handleFormValidChange = (val) => {
-    if (isFormValid === 'yes') return; // Cannot un-validate form once validated
-    setIsFormValid(val);
-    performAutoSave(docValidation, val);
+    // If it's already 'yes' and we pass 'yes', toggle it back to null
+    const nextVal = (isFormValid === 'yes' && val === 'yes') ? null : val;
+    setIsFormValid(nextVal);
+    performAutoSave(docValidation, nextVal);
   };
 
   const toggleValidation = (id) => {
-    if (docValidation[id]) return; // Cannot un-validate once true
     setDocValidation(prev => {
-      const next = { ...prev, [id]: true };
+      const next = { ...prev, [id]: !prev[id] };
       performAutoSave(next, isFormValid);
       return next;
     });
@@ -457,7 +494,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
               <div className={`ra-doc-item-premium ${isFormValid === 'yes' ? 'is-valid' : ''}`}>
                 <div
                   className="ra-doc-icon-col"
-                  style={{ cursor: (isFormValid === 'yes' || isToAssign || isToDeliver || isCompleted) ? 'default' : 'pointer' }}
+                  style={{ cursor: (isToAssign || isToDeliver || isCompleted) ? 'default' : 'pointer' }}
                   onClick={() => !(isToAssign || isToDeliver || isCompleted) && handleFormValidChange(isFormValid === 'yes' ? null : 'yes')}
                 >
                   {isFormValid === 'yes' ? (
@@ -482,7 +519,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
                 <div key={doc.id} className={`ra-doc-item-premium ${doc.isMissing ? 'is-missing' : (docValidation[doc.id] ? 'is-valid' : '')}`}>
                   <div
                     className="ra-doc-icon-col"
-                    style={{ cursor: (doc.isMissing || docValidation[doc.id] || isToAssign || isToDeliver || isCompleted) ? 'default' : 'pointer' }}
+                    style={{ cursor: (doc.isMissing || isToAssign || isToDeliver || isCompleted) ? 'default' : 'pointer' }}
                     onClick={() => !doc.isMissing && !(isToAssign || isToDeliver || isCompleted) && toggleValidation(doc.id)}
                   >
                     {doc.isMissing ? (
@@ -500,7 +537,7 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
                   </div>
                   <div className="ra-doc-action-col">
                     {!doc.isMissing && doc.path && (
-                      <button className="ra-voir-btn" onClick={() => handleViewDoc(doc.path)}>
+                      <button className="ra-voir-btn" onClick={() => handleViewDoc(doc)}>
                         Voir <Eye size={16} />
                       </button>
                     )}
@@ -657,6 +694,90 @@ const RequestAnalysis = ({ requestData, onBack, onValidate, onReject, onPause, o
           onClose={() => setShowDeliveryModal(false)}
           onSuccess={() => { onBack && onBack(); }}
         />
+      )}
+
+      {/* DOCUMENT VIEWER MODAL */}
+      {docToView && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 10, width: '100%', maxWidth: 800, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.35)' }}>
+            {/* Header */}
+            <div style={{ background: '#1e3a8a', padding: '16px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: '10px 10px 0 0' }}>
+              <h3 style={{ color: 'white', margin: 0, fontSize: 15, fontWeight: 800 }}>
+                Visualisation : {docToView.name || 'Document'}
+              </h3>
+              <button 
+                onClick={() => setDocToView(null)} 
+                style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', fontSize: 24, lineHeight: 1 }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content area */}
+            <div style={{ flex: 1, padding: 20, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', minHeight: 400 }}>
+              {docAvailability === 'checking' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                  <RefreshCw className="animate-spin text-blue-600" size={32} />
+                  <span style={{ color: '#475569', fontWeight: 600 }}>Vérification du fichier sur le serveur...</span>
+                </div>
+              ) : docAvailability === 'not_found' ? (
+                <div style={{ padding: 30, maxWidth: 500, textAlign: 'center', background: 'white', borderRadius: 8, border: '1px solid #fca5a5', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
+                  <AlertCircle size={48} style={{ color: '#ef4444', margin: '0 auto 16px' }} />
+                  <h4 style={{ color: '#991b1b', fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Fichier physique non trouvé</h4>
+                  <p style={{ color: '#7f1d1d', fontSize: 13, lineHeight: 1.5, marginBottom: 16 }}>
+                    Le fichier <strong>{docToView.fileName || docToView.name}</strong> n'a pas pu être chargé.
+                  </p>
+                  <div style={{ padding: 12, background: '#fef2f2', borderRadius: 6, fontSize: 12, color: '#991b1b', textAlign: 'left', borderLeft: '4px solid #ef4444' }}>
+                    <p style={{ margin: 0, fontWeight: 600, marginBottom: 4 }}>Note technique :</p>
+                    <p style={{ margin: 0, lineHeight: 1.4 }}>
+                      Sur les hébergements éphémères (comme Render), les fichiers locaux stockés dans le dossier <code>uploads/</code> sont supprimés à chaque redéploiement ou redémarrage de l'instance si aucun volume de stockage persistant n'est configuré.
+                    </p>
+                  </div>
+                </div>
+              ) : docToView.path ? (
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {docToView.path.toLowerCase().endsWith('.pdf') ? (
+                    <iframe
+                      src={getDocUrl(docToView.path)}
+                      style={{ width: '100%', height: '60vh', border: 'none', borderRadius: 6 }}
+                      title="Aperçu du PDF"
+                    />
+                  ) : (
+                    <img
+                      src={getDocUrl(docToView.path)}
+                      alt={docToView.name}
+                      style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain', borderRadius: 6, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                  )}
+                  <p style={{ marginTop: 12, color: '#64748b', fontSize: 13, fontWeight: 600 }}>{docToView.fileName || docToView.name}</p>
+                </div>
+              ) : (
+                <div style={{ padding: 40, textAlign: 'center' }}>
+                  <FileText size={64} style={{ color: '#cbd5e1', marginBottom: 16 }} />
+                  <p style={{ color: '#475569', fontWeight: 700 }}>Aperçu non disponible</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer actions */}
+            <div style={{ padding: '12px 20px', background: 'white', display: 'flex', justifyContent: 'flex-end', gap: 12, borderTop: '1px solid #e2e8f0' }}>
+              <button
+                onClick={() => {
+                  window.open(getDocUrl(docToView.path), '_blank');
+                }}
+                style={{ padding: '8px 16px', background: '#cbd5e1', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 13, color: '#1e293b' }}
+              >
+                Ouvrir dans un nouvel onglet
+              </button>
+              <button
+                onClick={() => setDocToView(null)}
+                style={{ padding: '8px 16px', background: '#1e3a8a', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 13, color: 'white' }}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -56,6 +56,14 @@ app.use(express.static(frontendDist));
 // This enables client-side routing (React Router) to handle the URL
 // Express 5 requires named wildcards: '*path' instead of bare '*'
 app.get('*path', (req, res) => {
+    // Don't serve index.html for requests that look like static files
+    // (e.g. .js, .css, .png, .svg, .map, .woff2, etc.)
+    // Only navigation requests (no extension or .html) get the SPA fallback
+    const ext = path.extname(req.path);
+    if (ext && ext !== '.html') {
+        return res.status(404).end();
+    }
+
     if (fs.existsSync(indexHtml)) {
         res.sendFile(indexHtml);
     } else {
