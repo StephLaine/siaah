@@ -14,7 +14,8 @@ const ROLE_LABELS = {
 
 const EMPTY_FORM = {
     first_name: '', last_name: '', email: '', password: '',
-    nif: '', phone: '', role_id: '4', office_id: ''
+    nif: '', phone: '', role_id: '4', office_id: '',
+    assigned_services: []
 };
 
 const DetailRow = ({ label, value, icon: Icon }) => (
@@ -114,6 +115,12 @@ const UtilisateursManager = () => {
 
     const openEdit = (u) => {
         setEditUser(u);
+        let assigned = [];
+        if (u.assigned_services) {
+            assigned = Array.isArray(u.assigned_services)
+                ? u.assigned_services
+                : (typeof u.assigned_services === 'string' ? JSON.parse(u.assigned_services) : []);
+        }
         setForm({
             first_name: u.first_name || '',
             last_name: u.last_name || '',
@@ -122,7 +129,8 @@ const UtilisateursManager = () => {
             nif: u.nif || '',
             phone: u.phone || '',
             role_id: String(u.role_id),
-            office_id: String(u.office_id || '')
+            office_id: String(u.office_id || ''),
+            assigned_services: assigned
         });
         setShowModal(true);
     };
@@ -306,6 +314,19 @@ const UtilisateursManager = () => {
                                         <DetailRow label="Entité" value={viewUser.entity_name} icon={Building2} />
                                         <DetailRow label="Bureau" value={viewUser.office_name} icon={MapPin} />
                                         <DetailRow label="Date d'inscription" value={new Date(viewUser.created_at).toLocaleString()} icon={Users} />
+                                        {viewUser.assigned_services && (Array.isArray(viewUser.assigned_services) ? viewUser.assigned_services.length > 0 : JSON.parse(viewUser.assigned_services || '[]').length > 0) && (
+                                            <div className="sa-detail-item" style={{ gridColumn: 'span 2' }}>
+                                                <div className="sa-detail-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                                                    <Shield size={14} />
+                                                    <span>Modules Assignés</span>
+                                                </div>
+                                                <div className="sa-services-grid" style={{ marginTop: '0.25rem' }}>
+                                                    {(Array.isArray(viewUser.assigned_services) ? viewUser.assigned_services : JSON.parse(viewUser.assigned_services || '[]')).map(srv => (
+                                                        <span key={srv} className="sa-service-chip selected" style={{ cursor: 'default' }}>{srv}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </FormSection>
                             </div>
@@ -375,6 +396,32 @@ const UtilisateursManager = () => {
                                         </select>
                                     </Field>
                                 </div>
+                                {[2, 3, '2', '3'].includes(form.role_id) && (
+                                    <div className="sa-form-row" style={{ display: 'block', marginTop: '1.25rem' }}>
+                                        <Field label="Services assignés (Modules autorisés dans le menu)">
+                                            <div className="sa-services-grid" style={{ marginTop: '0.5rem' }}>
+                                                {['Immatriculation', 'Permis de Conduire', 'Assurances', 'Contraventions', 'Code de la route', 'Station de services', 'Accidents de la route'].map(srv => {
+                                                    const isSelected = form.assigned_services?.includes(srv);
+                                                    return (
+                                                        <div
+                                                            key={srv}
+                                                            className={`sa-service-chip ${isSelected ? 'selected' : ''}`}
+                                                            onClick={() => {
+                                                                const current = form.assigned_services || [];
+                                                                const updated = isSelected
+                                                                    ? current.filter(s => s !== srv)
+                                                                    : [...current, srv];
+                                                                setForm({ ...form, assigned_services: updated });
+                                                            }}
+                                                        >
+                                                            {srv}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </Field>
+                                    </div>
+                                )}
                             </FormSection>
                         </div>
                         <div className="sa-modal-footer">

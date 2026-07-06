@@ -450,10 +450,12 @@ const deleteEntity = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT u.id, u.first_name, u.last_name, u.email, u.role_id, u.office_id, u.created_at,
-        r.name as role_name
+      SELECT u.id, u.first_name, u.last_name, u.email, u.phone, u.nif, u.role_id, u.office_id, u.assigned_services, u.created_at,
+             r.name as role_name, o.name as office_name, e.name as entity_name
       FROM users u
       LEFT JOIN roles r ON u.role_id = r.id
+      LEFT JOIN offices o ON u.office_id = o.id
+      LEFT JOIN entities e ON o.entity_id = e.id
       ORDER BY u.id ASC
     `);
     res.json({ status: 'success', data: result.rows });
@@ -595,11 +597,14 @@ module.exports = {
   getUserCommunications,
   getRoles,
   createUser: async (req, res) => {
-    const { first_name, last_name, email, password, role_id, office_id } = req.body;
+    const { first_name, last_name, email, password, phone, nif, role_id, office_id, assigned_services = [] } = req.body;
     try {
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
       const result = await pool.query(
-        'INSERT INTO users (first_name, last_name, email, password, role_id, office_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
-        [first_name, last_name, email, password, role_id, office_id]
+        'INSERT INTO users (first_name, last_name, email, password, phone, nif, role_id, office_id, assigned_services) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+        [first_name, last_name, email, hashedPassword, phone, nif, role_id, office_id, JSON.stringify(assigned_services)]
       );
       res.status(201).json({ status: 'success', data: result.rows[0] });
     } catch (err) {
@@ -609,12 +614,20 @@ module.exports = {
   },
   updateUser: async (req, res) => {
     const { id } = req.params;
-    const { first_name, last_name, email, role_id, office_id } = req.body;
+    const { first_name, last_name, email, password, phone, nif, role_id, office_id, assigned_services = [] } = req.body;
     try {
-      const result = await pool.query(
-        'UPDATE users SET first_name=$1, last_name=$2, email=$3, role_id=$4, office_id=$5 WHERE id=$6 RETURNING *',
-        [first_name, last_name, email, role_id, office_id, id]
-      );
+      let queryStr = 'UPDATE users SET first_name=$1, last_name=$2, email=$3, phone=$4, nif=$5, role_id=$6, office_id=$7, assigned_services=$8 WHERE id=$9 RETURNING *';
+      let params = [first_name, last_name, email, phone, nif, role_id, office_id, JSON.stringify(assigned_services), id];
+
+      if (password && password.trim() !== '') {
+        const bcrypt = require('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        queryStr = 'UPDATE users SET first_name=$1, last_name=$2, email=$3, password=$4, phone=$5, nif=$6, role_id=$7, office_id=$8, assigned_services=$9 WHERE id=$10 RETURNING *';
+        params = [first_name, last_name, email, hashedPassword, phone, nif, role_id, office_id, JSON.stringify(assigned_services), id];
+      }
+
+      const result = await pool.query(queryStr, params);
       if (result.rows.length === 0) return res.status(404).json({ status: 'error', message: 'User not found' });
       res.json({ status: 'success', data: result.rows[0] });
     } catch (err) {

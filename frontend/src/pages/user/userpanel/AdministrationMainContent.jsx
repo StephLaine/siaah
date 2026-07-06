@@ -77,6 +77,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
   // Stats & Dashboard state
   const [stats, setStats] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [recentActivityPage, setRecentActivityPage] = useState(1);
   const [expandedActivity, setExpandedActivity] = useState(null);
   const [searchDocId, setSearchDocId] = useState('');
 
@@ -105,6 +106,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
     setShowUserProfile(false);
     setSelectedRequest(null);
     setSelectedUser(null);
+    setRecentActivityPage(1);
 
     if (activeSection === 'tableau-de-bord') {
       fetchDashboardData();
@@ -600,6 +602,13 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       </main>
     );
   } else if (activeSection === 'tableau-de-bord') {
+    const itemsPerPage = 7;
+    const totalPages = Math.ceil(recentActivity.length / itemsPerPage);
+    const displayActivities = recentActivity.slice(
+      (recentActivityPage - 1) * itemsPerPage,
+      recentActivityPage * itemsPerPage
+    );
+
     content = (
       <main className="admin-main-content">
         <div className="content-header">
@@ -633,7 +642,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
           </div>
           <div className="accordion-section">
             <h3 className="search-title"><Clock size={20} /> Activités Récentes</h3>
-            {recentActivity.length === 0 ? <div className="p-8 text-center text-slate-400">Aucune activité récente</div> : recentActivity.map(activity => (
+            {displayActivities.length === 0 ? <div className="p-8 text-center text-slate-400">Aucune activité récente</div> : displayActivities.map(activity => (
               <div key={activity.id} className="accordion-item">
                 <div className="accordion-header" onClick={() => setExpandedActivity(expandedActivity === activity.id ? null : activity.id)}>
                   <div className="accordion-title-group"><div className="activity-icon"><FileText size={20} /></div><div className="activity-main-info"><span className="activity-subject">Dossier #{activity.id}</span><span className="activity-meta">{activity.type}</span></div></div>
@@ -642,6 +651,41 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
                 {expandedActivity === activity.id && <div className="accordion-content p-4 bg-slate-50">Détails de l'activité: {activity.status}</div>}
               </div>
             ))}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                  Page {recentActivityPage} sur {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    className={`p-1.5 rounded-lg border transition-all flex items-center justify-center ${
+                      recentActivityPage === 1 
+                        ? 'text-slate-300 border-slate-100 bg-white cursor-not-allowed' 
+                        : 'text-slate-700 border-slate-200 hover:bg-slate-100 bg-white shadow-sm hover:border-slate-300'
+                    }`}
+                    onClick={() => setRecentActivityPage(prev => Math.max(prev - 1, 1))}
+                    disabled={recentActivityPage === 1}
+                    title="Précédent"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    className={`p-1.5 rounded-lg border transition-all flex items-center justify-center ${
+                      recentActivityPage === totalPages 
+                        ? 'text-slate-300 border-slate-100 bg-white cursor-not-allowed' 
+                        : 'text-slate-700 border-slate-200 hover:bg-slate-100 bg-white shadow-sm hover:border-slate-300'
+                    }`}
+                    onClick={() => setRecentActivityPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={recentActivityPage === totalPages}
+                    title="Suivant"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

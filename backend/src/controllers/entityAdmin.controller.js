@@ -46,7 +46,7 @@ const getEntityStats = async (req, res) => {
                 JOIN offices o ON sr.office_id = o.id
                 WHERE sr.office_id = $1
                 ORDER BY sr.updated_at DESC
-                LIMIT 10
+                LIMIT 100
             `, [officeId]),
 
             pool.query(`
