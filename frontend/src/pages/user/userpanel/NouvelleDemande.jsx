@@ -74,7 +74,8 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
     const [selectedOperation, setSelectedOperation] = React.useState(initialOperation);
     const [currentDraftId, setCurrentDraftId] = React.useState(initialDraftId);
     const [createdRequestId, setCreatedRequestId] = React.useState(null);
-    const [paymentMethod, setPaymentMethod] = React.useState('Carte Bancaire');
+    const [paymentMethod, setPaymentMethod] = React.useState('Mon Cash');
+    const [isRedirecting, setIsRedirecting] = React.useState(false);
     const [subStep, setSubStep] = React.useState(1); // 1: Form, 2: Documents, 3: Recap
     const [searchOffice, setSearchOffice] = React.useState('');
     const [showOfficeList, setShowOfficeList] = React.useState(false);
@@ -1838,39 +1839,130 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                     </div>
                                 </div>
 
-                                <div className="card-mock-input">
-                                    <input type="text" placeholder="#### #### #### ####" disabled />
-                                    <div className="card-row">
-                                        <input type="text" placeholder="MM/YY" disabled style={{ width: '50%' }} />
-                                        <input type="text" placeholder="CVV" disabled style={{ width: '50%' }} />
+                                {/* Show card fields only for credit card */}
+                                {paymentMethod === 'Carte Bancaire' && (
+                                    <div className="card-mock-input">
+                                        <input type="text" placeholder="#### #### #### ####" disabled />
+                                        <div className="card-row">
+                                            <input type="text" placeholder="MM/YY" disabled style={{ width: '50%' }} />
+                                            <input type="text" placeholder="CVV" disabled style={{ width: '50%' }} />
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+
+                                {/* MonCash info panel */}
+                                {paymentMethod === 'Mon Cash' && !isRedirecting && (
+                                    <div style={{ background: 'linear-gradient(135deg, #fef3c7, #fff7ed)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <Globe2 size={28} color="#d97706" />
+                                        <div>
+                                            <div style={{ fontWeight: '600', color: '#92400e', fontSize: '0.95rem' }}>Paiement via Mon Cash</div>
+                                            <div style={{ color: '#78350f', fontSize: '0.82rem', marginTop: '2px' }}>MonCash s'ouvrira dans un nouvel onglet. Revenez ici une fois le paiement effectué.</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Polling status: waiting for MonCash payment */}
+                                {isRedirecting && paymentMethod === 'Mon Cash' && (
+                                    <div style={{ background: 'linear-gradient(135deg, #dbeafe, #eff6ff)', border: '1px solid #3b82f6', borderRadius: '12px', padding: '20px', marginBottom: '16px', textAlign: 'center' }}>
+                                        <Loader2 className="animate-spin" size={36} color="#2563eb" style={{ margin: '0 auto 12px', display: 'block' }} />
+                                        <div style={{ fontWeight: '600', color: '#1e40af', fontSize: '1rem' }}>En attente de votre paiement MonCash...</div>
+                                        <div style={{ color: '#3b82f6', fontSize: '0.85rem', marginTop: '6px' }}>
+                                            Effectuez le paiement dans l'onglet MonCash puis revenez ici.<br/>
+                                            Cette page se mettra à jour automatiquement.
+                                        </div>
+                                    </div>
+                                )}
 
                                 <button
                                     className="btn-confirm-payment"
+                                    disabled={isRedirecting}
                                     onClick={async () => {
                                         try {
-                                            const response = await fetch(`/api/requests/${createdRequestId}/pay`, {
+                                            let methodKey = 'moncash';
+                                            if (paymentMethod === 'Carte Bancaire') methodKey = 'credit_card';
+                                            if (paymentMethod === 'Mon Cash') methodKey = 'moncash';
+
+                                            if (paymentMethod === 'Virement') {
+                                                alert("Le virement bancaire n'est pas encore disponible en ligne. Veuillez utiliser Mon Cash ou Carte Bancaire.");
+                                                return;
+                                            }
+
+                                            setIsRedirecting(true);
+
+                                            // Pre-open window synchronously to bypass browser popup blockers
+                                            let paymentWindow = null;
+                                            if (methodKey === 'moncash') {
+                                                paymentWindow = window.open('about:blank', '_blank');
+                                            }
+
+                                            // Call real payment gateway initiation API
+                                            const response = await fetch('/api/payments/initiate', {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
                                                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                                                 },
-                                                body: JSON.stringify({ paymentMethod })
+                                                body: JSON.stringify({
+                                                    requestId: createdRequestId,
+                                                    amount: getPriceForService(selectedService) || 2500,
+                                                    method: methodKey
+                                                })
                                             });
-                                            if (response.ok) {
-                                                alert("Paiement réussi ! Votre dossier est maintenant en cours de traitement.");
-                                                window.location.href = '/user/statut';
+
+                                            const result = await response.json();
+                                            if (response.ok && result.success) {
+                                                if (methodKey === 'moncash') {
+                                                    // Navigate the pre-opened window to MonCash Sandbox URL
+                                                    if (paymentWindow) {
+                                                        paymentWindow.location.href = result.paymentUrl;
+                                                    } else {
+                                                        window.location.href = result.paymentUrl;
+                                                    }
+
+                                                    // Poll every 3 seconds to check if payment completed
+                                                    const paymentId = result.paymentId || result.paymentUrl.match(/orderId=(\d+)/)?.[1];
+                                                    let attempts = 0;
+                                                    const maxAttempts = 60; // 3 minutes max
+                                                    const pollInterval = setInterval(async () => {
+                                                        attempts++;
+                                                        try {
+                                                            const verifyRes = await fetch(`/api/payments/verify/${paymentId}`, {
+                                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                                                            });
+                                                            const verifyData = await verifyRes.json();
+                                                            if (verifyData.success && verifyData.status === 'completed') {
+                                                                clearInterval(pollInterval);
+                                                                setIsRedirecting(false);
+                                                                alert("✅ Paiement MonCash confirmé ! Votre dossier est maintenant en cours de traitement.");
+                                                                window.location.href = '/user/statut';
+                                                            }
+                                                        } catch (e) { /* ignore polling errors */ }
+                                                        if (attempts >= maxAttempts) {
+                                                            clearInterval(pollInterval);
+                                                            setIsRedirecting(false);
+                                                            alert("Le paiement n'a pas pu être confirmé automatiquement. Vérifiez le statut dans 'Mes Demandes'.");
+                                                            window.location.href = '/user/statut';
+                                                        }
+                                                    }, 3000);
+                                                } else {
+                                                    // Stripe: redirect in same window
+                                                    window.location.href = result.paymentUrl;
+                                                }
                                             } else {
-                                                alert("Erreur lors de la validation du paiement.");
+                                                setIsRedirecting(false);
+                                                alert("Erreur lors de l'initiation du paiement : " + (result.message || "Erreur inconnue"));
                                             }
                                         } catch (error) {
+                                            setIsRedirecting(false);
                                             console.error("Payment confirmation error:", error);
                                             alert("Une erreur est survenue lors du paiement.");
                                         }
                                     }}
                                 >
-                                    Confirmer le paiement de {Number(getPriceForService(selectedService)).toLocaleString()} HTG
+                                    {isRedirecting
+                                        ? 'En attente du paiement...'
+                                        : `Confirmer le paiement de ${Number(getPriceForService(selectedService)).toLocaleString()} HTG`
+                                    }
                                 </button>
                             </div>
                         ) : null}

@@ -56,12 +56,12 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
     { id: 'LI21020002', name: 'Sarah Dieudonne', type: 'Permis de Conduire', date: '16/09/2025', status: 'processing' }
   ];
 
-  // Accordion state for main modules (collapsed by default)
+  // Accordion state for main modules (expanded by default)
   const [accordionOpen, setAccordionOpen] = useState({
-    immatriculation: false,
-    mesVehicules: false,
-    permis: false,
-    assurance: false,
+    immatriculation: true,
+    mesVehicules: true,
+    permis: true,
+    assurance: true,
   });
 
   const toggleAccordion = (key) => {
@@ -310,7 +310,6 @@ const SidebarContent = ({ selectedContent, onSectionChange }) => {
             <div className="step"><div className="step-number">2</div><div className="step-content">Choix de l'opération (Nouveau, Renouvellement, etc.).</div></div>
             <div className="step"><div className="step-number">3</div><div className="step-content">Paiement et validation finale du dossier.</div></div>
           </div>
-          <PriceAndDocs sectionId="renouveler-permis" />
         </div>
       </SectionCard>
 

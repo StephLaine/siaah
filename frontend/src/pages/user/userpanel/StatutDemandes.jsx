@@ -231,6 +231,12 @@ const StatutDemandes = () => {
     }
 
     try {
+      // Pre-open window synchronously to bypass browser popup blockers
+      let paymentWindow = null;
+      if (methodKey === 'moncash') {
+        paymentWindow = window.open('about:blank', '_blank');
+      }
+
       const response = await fetch('/api/payments/initiate', {
         method: 'POST',
         headers: { 
@@ -247,8 +253,41 @@ const StatutDemandes = () => {
       const result = await response.json();
       
       if (response.ok && result.success) {
-        // Redirection to payment provider
-        window.location.href = result.paymentUrl;
+        if (methodKey === 'moncash') {
+          // Navigate the pre-opened window to MonCash Sandbox URL
+          if (paymentWindow) {
+            paymentWindow.location.href = result.paymentUrl;
+          } else {
+            window.location.href = result.paymentUrl;
+          }
+
+          // Poll verify endpoint until completed
+          const paymentId = result.paymentId || result.paymentUrl.match(/orderId=(\d+)/)?.[1];
+          let attempts = 0;
+          const maxAttempts = 60; // 3 minutes
+          const pollInterval = setInterval(async () => {
+            attempts++;
+            try {
+              const verifyRes = await fetch(`/api/payments/verify/${paymentId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyData.success && verifyData.status === 'completed') {
+                clearInterval(pollInterval);
+                alert("✅ Paiement MonCash confirmé avec succès !");
+                setShowPaymentModal(false);
+                fetchUserRequests(); // Reload list
+              }
+            } catch (e) { /* ignore polling errors */ }
+            if (attempts >= maxAttempts) {
+              clearInterval(pollInterval);
+              alert("Délai d'attente dépassé. Veuillez rafraîchir la page pour vérifier le statut de votre paiement.");
+              setShowPaymentModal(false);
+            }
+          }, 3000);
+        } else {
+          window.location.href = result.paymentUrl;
+        }
       } else {
         alert("Erreur lors de l'initiation du paiement : " + (result.message || "Erreur inconnue"));
       }

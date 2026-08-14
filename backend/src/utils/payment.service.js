@@ -37,6 +37,8 @@ const MonCashService = {
 
         try {
             console.log(`Initiating MonCash payment for Order: ${orderId}, Amount: ${amount}`);
+            // NOTE: The return URL must be configured in the MonCash Business dashboard,
+            // NOT in the API body. Set it to: ${process.env.FRONTEND_URL}/user/payment-success
             const response = await axios.post(url, {
                 orderId,
                 amount
