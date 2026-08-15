@@ -243,6 +243,13 @@ const AdministrationSidebar = ({ isOpen, onToggle, onSectionSelect, activeSectio
       adminOnly: true
     },
     {
+      id: 'demarches-superadmin',
+      icon: <FileText size={20} />,
+      label: 'Gestion des Démarches',
+      subItems: [],
+      adminOnly: true
+    },
+    {
       id: 'rendez-vous',
       icon: <CalendarCheck size={20} />,
       label: 'Rendez-vous',

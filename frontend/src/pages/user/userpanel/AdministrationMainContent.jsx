@@ -38,6 +38,7 @@ import GestionPermisConfig from './GestionPermisConfig';
 import MesRendezVous from './MesRendezVous';
 import Reports from './Reports';
 import DeliveryModal from './DeliveryModal';
+import DemandesManager from '../../superadmin/DemandesManager';
 
 const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSectionSelect, externalRequest }) => {
   const { user, token } = useAuth();
@@ -751,6 +752,12 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
             </tbody>
           </table>
         </div>
+      </main>
+    );
+  } else if (activeSection === 'demarches-superadmin' || activeSection === 'demarches') {
+    content = (
+      <main className="admin-main-content">
+        <DemandesManager />
       </main>
     );
   } else {
