@@ -220,9 +220,11 @@ const getOfficeRequests = async (req, res) => {
 const getOffices = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT o.id, o.name, o.type, o.entity_id, 
+            SELECT o.*, e.name as entity_name,
                 ARRAY(SELECT service_id FROM entity_services WHERE entity_id = o.entity_id) as service_ids
-            FROM offices o ORDER BY o.name ASC
+            FROM offices o
+            LEFT JOIN entities e ON o.entity_id = e.id
+            ORDER BY o.name ASC
         `);
         res.json({ status: 'success', data: result.rows });
     } catch (err) {

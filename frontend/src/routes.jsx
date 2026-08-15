@@ -51,6 +51,7 @@ import BureauxManager from './pages/superadmin/BureauxManager';
 import UtilisateursManager from './pages/superadmin/UtilisateursManager';
 import ServicesManager from './pages/superadmin/ServicesManager';
 import ServiceSummary from './pages/superadmin/ServiceSummary';
+import DemandesManager from './pages/superadmin/DemandesManager';
 
 /**
  * ══════════════════════════════════════════════════
@@ -186,6 +187,7 @@ const AppRoutes = () => {
                     <Route path="entites"      element={<EntitesManager />} />
                     <Route path="bureaux"      element={<BureauxManager />} />
                     <Route path="utilisateurs" element={<UtilisateursManager />} />
+                    <Route path="demandes"     element={<DemandesManager />} />
                 </Route>
 
                 {/* ══════════════════════════════════ */}

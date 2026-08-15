@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, Users, MapPin, FileCheck, TrendingUp, Activity, AlertCircle, Layers } from 'lucide-react';
+import { Building2, Users, MapPin, FileCheck, TrendingUp, Activity, AlertCircle, Layers, FileText } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
@@ -230,6 +230,10 @@ const SuperAdminDashboard = () => {
                         <a href="/superadmin/utilisateurs" className="sa-quick-link sa-ql-purple">
                             <Users size={22} />
                             <span>Gérer les Utilisateurs</span>
+                        </a>
+                        <a href="/superadmin/demandes" className="sa-quick-link sa-ql-red">
+                            <FileText size={22} />
+                            <span>Gérer les Démarches</span>
                         </a>
                     </div>
                 </div>

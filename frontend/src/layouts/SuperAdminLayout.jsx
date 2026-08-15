@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import {
     LayoutDashboard, Building2, MapPin, Users, ChevronLeft,
-    ChevronRight, LogOut, Menu, ShieldCheck, Bell, Settings, Layers, Sun, Moon
+    ChevronRight, LogOut, Menu, ShieldCheck, Bell, Settings, Layers, Sun, Moon, FileText
 } from 'lucide-react';
 
 import './SuperAdminLayout.css';
@@ -58,6 +58,7 @@ const SuperAdminLayout = () => {
         { to: '/superadmin/entites', icon: <Building2 size={20} />, label: 'Entités' },
         { to: '/superadmin/bureaux', icon: <MapPin size={20} />, label: 'Bureaux' },
         { to: '/superadmin/utilisateurs', icon: <Users size={20} />, label: 'Utilisateurs' },
+        { to: '/superadmin/demandes', icon: <FileText size={20} />, label: 'Démarches', danger: true },
     ];
 
     return (

@@ -61,6 +61,7 @@ const SCHEMA = [
     responsable_email VARCHAR(100),
     type_bureau VARCHAR(50),
     heures_ouverture VARCHAR(255),
+    services JSONB DEFAULT '[]',
     statut VARCHAR(30) DEFAULT 'Actif',
     date_ouverture DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

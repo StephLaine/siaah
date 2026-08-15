@@ -43,4 +43,12 @@ router.post('/users',         c.createUser);
 router.put('/users/:id',      c.updateUser);
 router.delete('/users/:id',   c.deleteUser);
 
+// ── Gestion des Demandes (Super Admin SEULEMENT) ──
+router.get('/requests',              c.getAllRequests);
+router.delete('/requests/all',       c.deleteAllRequests);
+router.delete('/requests/:id',       c.deleteRequest);
+router.delete('/requests/user/:uid', c.deleteUserRequests);
+router.patch('/requests/:id/block',  c.toggleBlockRequest);
+
 module.exports = router;
+

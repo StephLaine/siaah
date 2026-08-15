@@ -523,11 +523,33 @@ module.exports = {
   setEntityServices,
   getOffices: requestCtrl.getOffices,
   createOffice: async (req, res) => {
-    const { name, type, entity_id } = req.body;
+    const {
+      name, code, entity_id, departement, commune, quartier, adresse, location,
+      latitude, longitude, telephone, email, responsable_nom, responsable_fonction,
+      responsable_telephone, responsable_email, type_bureau, heures_ouverture,
+      services, statut, date_ouverture, type
+    } = req.body;
     try {
       const result = await pool.query(
-        'INSERT INTO offices (name, type, entity_id) VALUES ($1, $2, $3) RETURNING *',
-        [name, type, entity_id]
+        `INSERT INTO offices (
+          name, code, entity_id, departement, commune, quartier, adresse, location,
+          latitude, longitude, telephone, email, responsable_nom, responsable_fonction,
+          responsable_telephone, responsable_email, type_bureau, heures_ouverture,
+          services, statut, date_ouverture, type
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8,
+          $9, $10, $11, $12, $13, $14,
+          $15, $16, $17, $18,
+          $19::jsonb, $20, $21, $22
+        ) RETURNING *`,
+        [
+          name, code || null, entity_id || null, departement || null, commune || null, quartier || null,
+          adresse || location || null, location || adresse || null, latitude || null, longitude || null,
+          telephone || null, email || null, responsable_nom || null, responsable_fonction || null,
+          responsable_telephone || null, responsable_email || null, type_bureau || type || null,
+          heures_ouverture || null, JSON.stringify(services || []), statut || 'Actif',
+          date_ouverture || null, type || type_bureau || null
+        ]
       );
       res.status(201).json({ status: 'success', data: result.rows[0] });
     } catch (err) {
@@ -537,11 +559,29 @@ module.exports = {
   },
   updateOffice: async (req, res) => {
     const { id } = req.params;
-    const { name, type, entity_id } = req.body;
+    const {
+      name, code, entity_id, departement, commune, quartier, adresse, location,
+      latitude, longitude, telephone, email, responsable_nom, responsable_fonction,
+      responsable_telephone, responsable_email, type_bureau, heures_ouverture,
+      services, statut, date_ouverture, type
+    } = req.body;
     try {
       const result = await pool.query(
-        'UPDATE offices SET name = $1, type = $2, entity_id = $3 WHERE id = $4 RETURNING *',
-        [name, type, entity_id, id]
+        `UPDATE offices SET
+          name = $1, code = $2, entity_id = $3, departement = $4, commune = $5, quartier = $6,
+          adresse = $7, location = $8, latitude = $9, longitude = $10, telephone = $11,
+          email = $12, responsable_nom = $13, responsable_fonction = $14, responsable_telephone = $15,
+          responsable_email = $16, type_bureau = $17, heures_ouverture = $18, services = $19::jsonb,
+          statut = $20, date_ouverture = $21, type = $22
+        WHERE id = $23 RETURNING *`,
+        [
+          name, code || null, entity_id || null, departement || null, commune || null, quartier || null,
+          adresse || location || null, location || adresse || null, latitude || null, longitude || null,
+          telephone || null, email || null, responsable_nom || null, responsable_fonction || null,
+          responsable_telephone || null, responsable_email || null, type_bureau || type || null,
+          heures_ouverture || null, JSON.stringify(services || []), statut || 'Actif',
+          date_ouverture || null, type || type_bureau || null, id
+        ]
       );
       if (result.rows.length === 0) return res.status(404).json({ status: 'error', message: 'Office not found' });
       res.json({ status: 'success', data: result.rows[0] });
@@ -690,5 +730,97 @@ module.exports = {
       res.status(500).json({ status: 'error', message: err.message });
     }
   },
+
+  // ── Super Admin: Gestion des demandes ────────────────────────────────────
+  getAllRequests: async (req, res) => {
+    const { user_id, status, search, limit = 100, offset = 0 } = req.query;
+    try {
+      let query = `
+        SELECT sr.*, 
+               u.first_name, u.last_name, u.email, u.nif,
+               s.name AS service_name
+        FROM service_requests sr
+        LEFT JOIN users u ON sr.user_id = u.id
+        LEFT JOIN services s ON sr.service_id = s.id
+        WHERE 1=1
+      `;
+      const params = [];
+      let pIdx = 1;
+
+      if (user_id) { query += ` AND sr.user_id = $${pIdx++}`; params.push(user_id); }
+      if (status)  { query += ` AND sr.status = $${pIdx++}`; params.push(status); }
+      if (search)  {
+        query += ` AND (u.first_name ILIKE $${pIdx} OR u.last_name ILIKE $${pIdx} OR u.email ILIKE $${pIdx} OR u.nif ILIKE $${pIdx})`;
+        params.push(`%${search}%`);
+        pIdx++;
+      }
+
+      query += ` ORDER BY sr.created_at DESC LIMIT $${pIdx++} OFFSET $${pIdx++}`;
+      params.push(parseInt(limit), parseInt(offset));
+
+      const result = await pool.query(query, params);
+      const countQ = await pool.query(
+        `SELECT COUNT(*) FROM service_requests sr LEFT JOIN users u ON sr.user_id = u.id WHERE 1=1${user_id ? ' AND sr.user_id = $1' : ''}`,
+        user_id ? [user_id] : []
+      );
+      res.json({ status: 'success', data: result.rows, total: parseInt(countQ.rows[0].count) });
+    } catch (err) {
+      console.error('getAllRequests error:', err);
+      res.status(500).json({ status: 'error', message: err.message });
+    }
+  },
+
+  deleteRequest: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query('DELETE FROM service_requests WHERE id = $1 RETURNING id', [id]);
+      if (result.rows.length === 0) return res.status(404).json({ status: 'error', message: 'Demande non trouvée' });
+      res.json({ status: 'success', message: 'Demande supprimée' });
+    } catch (err) {
+      console.error('deleteRequest error:', err);
+      res.status(500).json({ status: 'error', message: err.message });
+    }
+  },
+
+  deleteUserRequests: async (req, res) => {
+    const { uid } = req.params;
+    try {
+      const result = await pool.query('DELETE FROM service_requests WHERE user_id = $1 RETURNING id', [uid]);
+      res.json({ status: 'success', message: `${result.rows.length} demande(s) supprimée(s)`, deleted: result.rows.length });
+    } catch (err) {
+      console.error('deleteUserRequests error:', err);
+      res.status(500).json({ status: 'error', message: err.message });
+    }
+  },
+
+  deleteAllRequests: async (req, res) => {
+    try {
+      const result = await pool.query('DELETE FROM service_requests RETURNING id');
+      res.json({ status: 'success', message: `Toutes les demandes (${result.rows.length}) ont été supprimées.`, deleted: result.rows.length });
+    } catch (err) {
+      console.error('deleteAllRequests error:', err);
+      res.status(500).json({ status: 'error', message: err.message });
+    }
+  },
+
+  toggleBlockRequest: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const check = await pool.query('SELECT status FROM service_requests WHERE id = $1', [id]);
+      if (check.rows.length === 0) return res.status(404).json({ status: 'error', message: 'Demande non trouvée' });
+      const currentStatus = check.rows[0].status;
+      const newStatus = currentStatus === 'paused' ? 'pending' : 'paused';
+      const result = await pool.query(
+        'UPDATE service_requests SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+        [newStatus, id]
+      );
+      res.json({ status: 'success', data: result.rows[0], message: newStatus === 'paused' ? 'Demande bloquée/mise en pause' : 'Demande débloquée' });
+    } catch (err) {
+      console.error('toggleBlockRequest error:', err);
+      res.status(500).json({ status: 'error', message: err.message });
+    }
+  },
+
   globalSearch,
 };
+
