@@ -472,7 +472,20 @@ const getUserDetail = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ status: 'error', message: 'User not found' });
     }
-    res.json({ status: 'success', data: result.rows[0] });
+    const user = result.rows[0];
+
+    const requestsRes = await pool.query(`
+      SELECT sr.*, s.name as service_name 
+      FROM service_requests sr 
+      LEFT JOIN services s ON sr.service_id = s.id 
+      WHERE sr.user_id = $1 ORDER BY sr.created_at DESC
+    `, [id]);
+    user.requests = requestsRes.rows;
+
+    const vehiclesRes = await pool.query('SELECT *, make AS brand, vin AS chassis_number FROM vehicles WHERE owner_id = $1 ORDER BY created_at DESC', [id]);
+    user.vehicles = vehiclesRes.rows;
+
+    res.json({ status: 'success', data: user });
   } catch (err) {
     console.error('getUserDetail error:', err);
     res.status(500).json({ status: 'error', message: err.message });

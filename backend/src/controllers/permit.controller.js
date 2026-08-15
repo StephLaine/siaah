@@ -65,7 +65,7 @@ const assignPermit = async (req, res) => {
                 );
             }
             await client.query(
-                `UPDATE service_requests SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+                `UPDATE service_requests SET status = 'to_deliver', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
                 [request_id]
             );
         }

@@ -49,4 +49,16 @@ const createNotification = async (userId, title, message, type = 'info') => {
     }
 };
 
-module.exports = { getNotifications, markAsRead, markAllAsRead, createNotification };
+const getMyCommunications = async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM communications WHERE user_id = $1 ORDER BY sent_at DESC LIMIT 50',
+            [req.user.id]
+        );
+        res.status(200).json({ status: 'success', data: result.rows });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+};
+
+module.exports = { getNotifications, markAsRead, markAllAsRead, createNotification, getMyCommunications };

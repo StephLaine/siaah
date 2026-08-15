@@ -66,15 +66,21 @@ const getVehicleStats = async (req, res) => {
 const getAllVehicles = async (req, res) => {
     const { limit, offset } = req.query;
     try {
-        let query = 'SELECT * FROM vehicles ORDER BY created_at DESC';
+        let query = `
+            SELECT v.*, u.first_name, u.last_name, u.nif, u.email, u.phone, u.address as owner_address, u.city as owner_city
+            FROM vehicles v
+            LEFT JOIN users u ON v.owner_id = u.id
+            ORDER BY v.created_at DESC
+        `;
         const params = [];
+        let pIdx = 1;
 
         if (limit) {
-            query += ' LIMIT $1';
+            query += ` LIMIT $${pIdx++}`;
             params.push(limit);
         }
         if (offset) {
-            query += ' OFFSET $2';
+            query += ` OFFSET $${pIdx++}`;
             params.push(offset);
         }
 

@@ -78,13 +78,15 @@ const createRequest = async (req, res) => {
         }
 
         const finalStatus = status || 'pending';
+        const finalOfficeId = (office_id && office_id !== 'null' && office_id !== 'undefined' && office_id !== '' && !isNaN(parseInt(office_id))) ? parseInt(office_id) : null;
+        const finalPrice = (price && price !== 'null' && price !== 'undefined' && !isNaN(parseFloat(price))) ? parseFloat(price) : 0;
 
         // Sync user profile from registration/request data
         await syncUserInfo(req.user.id, details);
 
         const result = await pool.query(
             'INSERT INTO service_requests (user_id, type, details, status, price, office_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [req.user.id, type, details, finalStatus, price, office_id]
+            [req.user.id, type, details, finalStatus, finalPrice, finalOfficeId]
         );
 
         // Send confirmation email and create notification

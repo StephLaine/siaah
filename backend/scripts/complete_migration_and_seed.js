@@ -270,6 +270,7 @@ const SCHEMA = [
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     sender_id INT REFERENCES users(id) ON DELETE SET NULL,
+    type VARCHAR(50),
     subject VARCHAR(255),
     message TEXT,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

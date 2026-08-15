@@ -16,13 +16,14 @@ import {
   CheckCircle,
   AlertCircle,
   CreditCard,
-  Download, FileEdit, Wallet, Smartphone, Globe, ArrowRight, Trash2 as TrashIcon, CheckCircle as CheckIcon
+  Download, FileEdit, Wallet, Smartphone, Globe, ArrowRight, Building2, Trash2 as TrashIcon, Check as CheckIcon
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import './StatutDemandes.css';
 import { generateAttestationPDF } from '../../../utils/generatePDF';
 import AttestationTemplate from '../../../components/AttestationTemplate';
+import PaymentReceiptModal from '../../../components/PaymentReceiptModal';
 
 const StatutDemandes = () => {
   const navigate = useNavigate();
@@ -56,6 +57,13 @@ const StatutDemandes = () => {
 
   const [paymentRequest, setPaymentRequest] = useState(null);
   const [showSuccess, setShowSuccess] = useState(null); // { type: 'delete' | 'payment', message: '' }
+  const [selectedBank, setSelectedBank] = useState('sogebank');
+  const [senderName, setSenderName] = useState('');
+  const [senderAccount, setSenderAccount] = useState('');
+  const [bankRefNumber, setBankRefNumber] = useState('');
+  const [bankAuthPin, setBankAuthPin] = useState('');
+  const [showVirementModal, setShowVirementModal] = useState(false);
+  const [virementSuccessInfo, setVirementSuccessInfo] = useState(null);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('Carte Bancaire');
   const [viewType, setViewType] = useState('list'); // 'list' or 'grid'
@@ -63,25 +71,26 @@ const StatutDemandes = () => {
 
   const activeViewType = isMobile ? 'grid' : viewType;
 
-  React.useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const response = await fetch('/api/requests', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        const result = await response.json();
-        if (result.status === 'success') {
-          setRequests(result.data);
+  const fetchUserRequests = React.useCallback(async () => {
+    try {
+      const response = await fetch('/api/requests', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      } finally {
-        setLoading(false);
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        setRequests(result.data);
       }
-    };
-    fetchRequests();
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchUserRequests();
     // If navigated with openDrafts: true, expand that section
     if (location.state?.openDrafts) {
       setExpandedSections({
@@ -125,7 +134,7 @@ const StatutDemandes = () => {
         draft: urlStatus === 'draft'
       });
     }
-  }, [location.state, location.search, requests.length]);
+  }, [location.state, location.search, requests.length, fetchUserRequests]);
 
   const getStatusInfo = (status) => {
     switch (status?.toLowerCase()) {
@@ -223,19 +232,32 @@ const StatutDemandes = () => {
     let methodKey = 'moncash';
     if (paymentMethod === 'Carte Bancaire') methodKey = 'credit_card';
     if (paymentMethod === 'Mon Cash' || paymentMethod === 'MonCash') methodKey = 'moncash';
+    if (paymentMethod === 'Virement') methodKey = 'virement';
     
-    if (paymentMethod === 'Virement' || paymentMethod === 'NatCash') {
-      alert(`${paymentMethod} n'est pas encore disponible en ligne. Veuillez utiliser Mon Cash ou Carte Bancaire.`);
+    if (paymentMethod === 'NatCash') {
+      alert(`${paymentMethod} n'est pas encore disponible en ligne. Veuillez utiliser Mon Cash, Virement ou Carte Bancaire.`);
       setIsProcessingAction(false);
       return;
     }
 
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const defaultSenderName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 'Client SIAAH';
+
     try {
-      // Pre-open window synchronously to bypass browser popup blockers
+      // Pre-open window synchronously to bypass browser popup blockers (MonCash only)
       let paymentWindow = null;
       if (methodKey === 'moncash') {
         paymentWindow = window.open('about:blank', '_blank');
       }
+
+      const banksList = [
+        { id: 'sogebank', name: 'Sogebank (Sogebanking)' },
+        { id: 'unibank', name: 'Unibank (UnibankOnline)' },
+        { id: 'bnc', name: 'BNC (BNC Direct)' },
+        { id: 'buh', name: 'BUH (BUH Online)' },
+        { id: 'capital', name: 'Capital Bank' }
+      ];
+      const currentB = banksList.find(b => b.id === selectedBank) || banksList[0];
 
       const response = await fetch('/api/payments/initiate', {
         method: 'POST',
@@ -245,15 +267,41 @@ const StatutDemandes = () => {
         },
         body: JSON.stringify({ 
           requestId: paymentRequest.id, 
-          amount: (paymentRequest.price !== null && paymentRequest.price !== undefined) ? paymentRequest.price : 2500, // Fallback if price missing
-          method: methodKey 
+          amount: (paymentRequest.price !== null && paymentRequest.price !== undefined) ? Number(paymentRequest.price) : 2500, // Fallback if price missing
+          method: methodKey,
+          bank: currentB.name,
+          senderName: senderName || defaultSenderName,
+          senderAccount: senderAccount || 'Compte Client',
+          reference: bankRefNumber || `VIR-${Date.now().toString().slice(-8)}`
         })
       });
       
       const result = await response.json();
       
       if (response.ok && result.success) {
-        if (methodKey === 'moncash') {
+        if (methodKey === 'virement') {
+          setIsProcessingAction(false);
+          setPaymentRequest(null);
+          const userNif = paymentRequest.details?.nifCin || currentUser.nif || currentUser.cin || '—';
+          const userPhone = paymentRequest.details?.phone || paymentRequest.details?.telephone || currentUser.phone || currentUser.telephone || '—';
+          const userAddress = paymentRequest.details?.address || paymentRequest.details?.adresse || currentUser.address || currentUser.adresse || '—';
+
+          setVirementSuccessInfo({
+            bank: currentB.name,
+            senderName: senderName || defaultSenderName,
+            reference: bankRefNumber || result.details?.reference || `VIR-${Date.now().toString().slice(-8)}`,
+            amount: (paymentRequest.price !== null && paymentRequest.price !== undefined) ? Number(paymentRequest.price) : 2500,
+            requestId: paymentRequest.id,
+            serviceName: paymentRequest.type || 'Demande Administrative',
+            paymentMethod: 'Virement',
+            nif: userNif,
+            phone: userPhone,
+            address: userAddress,
+            email: currentUser.email || '—'
+          });
+          fetchUserRequests();
+          return;
+        } else if (methodKey === 'moncash') {
           // Navigate the pre-opened window to MonCash Sandbox URL
           if (paymentWindow) {
             paymentWindow.location.href = result.paymentUrl;
@@ -275,14 +323,14 @@ const StatutDemandes = () => {
               if (verifyData.success && verifyData.status === 'completed') {
                 clearInterval(pollInterval);
                 alert("✅ Paiement MonCash confirmé avec succès !");
-                setShowPaymentModal(false);
+                setPaymentRequest(null);
                 fetchUserRequests(); // Reload list
               }
             } catch (e) { /* ignore polling errors */ }
             if (attempts >= maxAttempts) {
               clearInterval(pollInterval);
               alert("Délai d'attente dépassé. Veuillez rafraîchir la page pour vérifier le statut de votre paiement.");
-              setShowPaymentModal(false);
+              setPaymentRequest(null);
             }
           }, 3000);
         } else {
@@ -941,6 +989,23 @@ const StatutDemandes = () => {
                   </div>
                 )}
                 
+                {paymentMethod === 'Virement' && (
+                  <div style={{ background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: '10px', padding: '16px', margin: '14px 0', textAlign: 'center' }}>
+                    <Building2 size={28} color="#2563eb" style={{ margin: '0 auto 8px', display: 'block' }} />
+                    <div style={{ fontWeight: '700', color: '#1e40af', fontSize: '0.92rem' }}>Virement Bancaire en Ligne</div>
+                    <div style={{ color: '#3b82f6', fontSize: '0.8rem', marginTop: '4px', marginBottom: '12px' }}>
+                      Sogebanking, UnibankOnline, BNC Direct, BUH, Capital Bank
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setShowVirementModal(true)}
+                      style={{ background: '#2563eb', color: '#ffffff', border: 'none', padding: '9px 16px', borderRadius: '8px', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }}
+                    >
+                      Saisir mes informations de virement →
+                    </button>
+                  </div>
+                )}
+                
                 {(paymentMethod === 'MonCash' || paymentMethod === 'NatCash') && (
                   <div className="phone-input-placeholder">
                     <input type="text" placeholder="Numéro de téléphone" className="pay-input" />
@@ -949,14 +1014,26 @@ const StatutDemandes = () => {
               </div>
               <div className="payment-modal-footer">
                 <button className="btn-cancel-pay" onClick={() => setPaymentRequest(null)}>Annuler</button>
-                <button className="btn-confirm-pay" onClick={handlePayRequest} disabled={isProcessingAction}>
+                <button 
+                  className="btn-confirm-pay" 
+                  onClick={() => {
+                    if (paymentMethod === 'Virement') {
+                      setShowVirementModal(true);
+                    } else {
+                      handlePayRequest();
+                    }
+                  }} 
+                  disabled={isProcessingAction}
+                >
                   {isProcessingAction ? (
                     <>
                       <Loader2 className="animate-spin" size={18} />
                       <span>Redirection...</span>
                     </>
                   ) : (
-                    `Confirmer le paiement de ${(paymentRequest.price !== null && paymentRequest.price !== undefined) ? parseFloat(paymentRequest.price).toLocaleString() : '2,500'} HTG`
+                    paymentMethod === 'Virement' 
+                      ? "Continuer vers le Virement →" 
+                      : `Confirmer le paiement de ${(paymentRequest.price !== null && paymentRequest.price !== undefined) ? parseFloat(paymentRequest.price).toLocaleString() : '2,500'} HTG`
                   )}
                 </button>
               </div>
@@ -964,6 +1041,213 @@ const StatutDemandes = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Modal 2 : Modal Dédié au Virement Bancaire */}
+      {showVirementModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 999999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            maxWidth: '520px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+            border: '1px solid #cbd5e1'
+          }}>
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
+              color: '#ffffff',
+              padding: '16px 20px',
+              borderTopLeftRadius: '15px',
+              borderTopRightRadius: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '0.98rem' }}>
+                <Building2 size={22} />
+                <span>Virement Bancaire en Ligne (Sogebanking / Banques Haïtiennes)</span>
+              </div>
+              <button 
+                onClick={() => setShowVirementModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '1.2rem', padding: '4px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '20px' }}>
+              {/* 1. Bank Selector */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                  1. Choisissez votre banque émettrice :
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+                  {[
+                    { id: 'sogebank', name: 'Sogebank', color: '#0047b3' },
+                    { id: 'unibank', name: 'Unibank', color: '#dc2626' },
+                    { id: 'bnc', name: 'BNC', color: '#047857' },
+                    { id: 'buh', name: 'BUH', color: '#d97706' },
+                    { id: 'capital', name: 'Capital', color: '#7c3aed' }
+                  ].map((b) => (
+                    <div
+                      key={b.id}
+                      onClick={() => setSelectedBank(b.id)}
+                      style={{
+                        padding: '8px 4px',
+                        borderRadius: '6px',
+                        border: `2px solid ${selectedBank === b.id ? b.color : '#e2e8f0'}`,
+                        background: selectedBank === b.id ? `${b.color}10` : '#ffffff',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        fontSize: '0.78rem',
+                        fontWeight: selectedBank === b.id ? '700' : '500',
+                        color: selectedBank === b.id ? b.color : '#475569'
+                      }}
+                    >
+                      {b.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Destination SIAAH Info */}
+              {(() => {
+                const banksList = [
+                  { id: 'sogebank', name: 'Sogebank (Sogebanking)', account: '102000-482910-01', color: '#0047b3' },
+                  { id: 'unibank', name: 'Unibank (UnibankOnline)', account: '210-1029-4829102', color: '#dc2626' },
+                  { id: 'bnc', name: 'BNC (BNC Direct)', account: '100201-9847201', color: '#047857' },
+                  { id: 'buh', name: 'BUH (BUH Online)', account: '301000-582910-02', color: '#d97706' },
+                  { id: 'capital', name: 'Capital Bank', account: '402000-981203-05', color: '#7c3aed' }
+                ];
+                const currentB = banksList.find(b => b.id === selectedBank) || banksList[0];
+                return (
+                  <div style={{ background: `${currentB.color}0F`, border: `1px solid ${currentB.color}40`, borderRadius: '8px', padding: '12px', marginBottom: '14px', fontSize: '0.83rem' }}>
+                    <div style={{ color: currentB.color, fontWeight: '700', marginBottom: '4px' }}>
+                      Banque : {currentB.name}
+                    </div>
+                    <div style={{ color: '#1e293b' }}>
+                      <div><strong>Compte Destinataire SIAAH :</strong> <span style={{ fontFamily: 'monospace', fontWeight: '700', fontSize: '0.9rem' }}>{currentB.account}</span></div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 3. User Inputs (WITHOUT NIF) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                    Nom du titulaire du compte émetteur :
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="Nom du titulaire du compte émetteur" 
+                    className="pay-input" 
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                    Numéro de compte client :
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: 102000-0982341" 
+                    className="pay-input" 
+                    value={senderAccount}
+                    onChange={(e) => setSenderAccount(e.target.value)}
+                    style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                      N° Bordereau / Réf virement :
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: SOGE-98402847" 
+                      className="pay-input" 
+                      value={bankRefNumber}
+                      onChange={(e) => setBankRefNumber(e.target.value)}
+                      style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                      PIN / Code bancaire :
+                    </label>
+                    <input 
+                      type="password" 
+                      placeholder="••••" 
+                      maxLength={6}
+                      className="pay-input" 
+                      value={bankAuthPin}
+                      onChange={(e) => setBankAuthPin(e.target.value)}
+                      style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '14px 20px',
+              background: '#f8fafc',
+              borderTop: '1px solid #e2e8f0',
+              borderBottomLeftRadius: '15px',
+              borderBottomRightRadius: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px'
+            }}>
+              <button 
+                onClick={() => setShowVirementModal(false)}
+                style={{ padding: '9px 15px', background: '#e2e8f0', border: 'none', borderRadius: '8px', fontWeight: '600', color: '#475569', cursor: 'pointer' }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={() => {
+                  setShowVirementModal(false);
+                  handlePayRequest();
+                }}
+                disabled={isProcessingAction}
+                style={{ padding: '9px 18px', background: '#2563eb', border: 'none', borderRadius: '8px', fontWeight: '700', color: '#ffffff', cursor: 'pointer' }}
+              >
+                Confirmer et Valider le Paiement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmation / Reçu de Paiement Stripe Style */}
+      {virementSuccessInfo && (
+        <PaymentReceiptModal
+          data={virementSuccessInfo}
+          onClose={() => setVirementSuccessInfo(null)}
+        />
+      )}
 
       {/* Success Popup */}
       <AnimatePresence>

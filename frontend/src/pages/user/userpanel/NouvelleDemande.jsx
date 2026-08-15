@@ -28,11 +28,15 @@ import {
     Edit3,
     Tag,
     Plus,
+    Building2,
+    CheckCircle,
+    Check,
     X as CloseIcon
 } from 'lucide-react';
 import './NouvelleDemande.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import PaymentReceiptModal from '../../../components/PaymentReceiptModal';
 
 // Import Modular Operation Forms
 // Permis
@@ -75,6 +79,13 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
     const [currentDraftId, setCurrentDraftId] = React.useState(initialDraftId);
     const [createdRequestId, setCreatedRequestId] = React.useState(null);
     const [paymentMethod, setPaymentMethod] = React.useState('Mon Cash');
+    const [selectedBank, setSelectedBank] = React.useState('sogebank');
+    const [senderName, setSenderName] = React.useState('');
+    const [senderAccount, setSenderAccount] = React.useState('');
+    const [bankRefNumber, setBankRefNumber] = React.useState('');
+    const [bankAuthPin, setBankAuthPin] = React.useState('');
+    const [showVirementModal, setShowVirementModal] = React.useState(false);
+    const [virementSuccessInfo, setVirementSuccessInfo] = React.useState(null);
     const [isRedirecting, setIsRedirecting] = React.useState(false);
     const [subStep, setSubStep] = React.useState(1); // 1: Form, 2: Documents, 3: Recap
     const [searchOffice, setSearchOffice] = React.useState('');
@@ -701,10 +712,12 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                 setDone(true);
                 setShowPaymentModal(true);
             } else {
-                alert("Erreur lors de la soumission");
+                const errData = await response.json().catch(() => ({}));
+                alert(`Erreur lors de la soumission : ${errData.message || 'Une erreur est survenue'}`);
             }
         } catch (error) {
             console.error("Submission Error:", error);
+            alert(`Erreur lors de la soumission : ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -1830,11 +1843,17 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                             <span className="pm-desc">Paiement mobile</span>
                                         </div>
                                     </div>
-                                    <div className={`pm-item ${paymentMethod === 'Virement' ? 'active' : ''}`} onClick={() => setPaymentMethod('Virement')}>
+                                    <div 
+                                        className={`pm-item ${paymentMethod === 'Virement' ? 'active' : ''}`} 
+                                        onClick={() => { 
+                                            setPaymentMethod('Virement'); 
+                                            setShowVirementModal(true); 
+                                        }}
+                                    >
                                         <FileText size={24} color="#3b82f6" />
                                         <div className="pm-info">
-                                            <span className="pm-name">Virement</span>
-                                            <span className="pm-desc">Banque locale</span>
+                                            <span className="pm-name">Virement Bancaire</span>
+                                            <span className="pm-desc">Sogebanking & Banques locales</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1850,6 +1869,24 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                     </div>
                                 )}
 
+                                {/* Summary Banner for Virement Bancaire */}
+                                {paymentMethod === 'Virement' && (
+                                    <div style={{ background: '#eff6ff', border: '1px solid #3b82f6', borderRadius: '12px', padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <div>
+                                            <div style={{ fontWeight: '700', color: '#1e40af', fontSize: '0.92rem' }}>Virement Bancaire en Ligne</div>
+                                            <div style={{ color: '#3b82f6', fontSize: '0.82rem', marginTop: '2px' }}>
+                                                {senderAccount ? `Compte Client : ${senderAccount}` : 'Cliquez pour remplir les informations de votre compte bancaire.'}
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => setShowVirementModal(true)}
+                                            style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontWeight: '600', fontSize: '0.82rem', cursor: 'pointer' }}
+                                        >
+                                            Changer / Remplir
+                                        </button>
+                                    </div>
+                                )}
+
                                 {/* MonCash info panel */}
                                 {paymentMethod === 'Mon Cash' && !isRedirecting && (
                                     <div style={{ background: 'linear-gradient(135deg, #fef3c7, #fff7ed)', border: '1px solid #f59e0b', borderRadius: '12px', padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1857,6 +1894,136 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                         <div>
                                             <div style={{ fontWeight: '600', color: '#92400e', fontSize: '0.95rem' }}>Paiement via Mon Cash</div>
                                             <div style={{ color: '#78350f', fontSize: '0.82rem', marginTop: '2px' }}>MonCash s'ouvrira dans un nouvel onglet. Revenez ici une fois le paiement effectué.</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Virement Bancaire (Sogebanking / Multi-Bank) Panel */}
+                                {paymentMethod === 'Virement' && !isRedirecting && (
+                                    <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '18px', marginBottom: '18px' }}>
+                                        <div style={{ fontWeight: '700', color: '#1e293b', fontSize: '0.98rem', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <Building2 size={22} color="#2563eb" /> 
+                                            <span>Virement Bancaire en Ligne (Sogebanking / Banques Haïtiennes)</span>
+                                        </div>
+
+                                        {/* 1. Bank Selector */}
+                                        <div style={{ marginBottom: '14px' }}>
+                                            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                                                1. Choisissez votre banque émettrice :
+                                            </label>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                                                {[
+                                                    { id: 'sogebank', name: 'Sogebank (Sogebanking)', account: '102000-482910-01', color: '#0047b3', iban: 'HT32 SOGE 0001 0200 0482 9100 12' },
+                                                    { id: 'unibank', name: 'Unibank (UnibankOnline)', account: '210-1029-4829102', color: '#dc2626', iban: 'HT32 UNIB 0210 1029 4829 1020 01' },
+                                                    { id: 'bnc', name: 'BNC (BNC Direct)', account: '100201-9847201', color: '#047857', iban: 'HT32 BNCH 0100 2019 8472 0100 05' },
+                                                    { id: 'buh', name: 'BUH (BUH Online)', account: '301000-582910-02', color: '#d97706', iban: 'HT32 BUHH 0301 0005 8291 0020 11' },
+                                                    { id: 'capital', name: 'Capital Bank', account: '402000-981203-05', color: '#7c3aed', iban: 'HT32 CAPB 0402 0009 8120 3050 09' }
+                                                ].map((b) => (
+                                                    <div
+                                                        key={b.id}
+                                                        onClick={() => setSelectedBank(b.id)}
+                                                        style={{
+                                                            padding: '10px',
+                                                            borderRadius: '8px',
+                                                            border: `2px solid ${selectedBank === b.id ? b.color : '#e2e8f0'}`,
+                                                            background: selectedBank === b.id ? `${b.color}0D` : '#ffffff',
+                                                            cursor: 'pointer',
+                                                            textAlign: 'center',
+                                                            transition: 'all 0.2s ease',
+                                                            fontWeight: selectedBank === b.id ? '700' : '500',
+                                                            color: selectedBank === b.id ? b.color : '#334155',
+                                                            fontSize: '0.82rem'
+                                                        }}
+                                                    >
+                                                        {b.name}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* 2. Destination Account Box */}
+                                        {(() => {
+                                            const banksList = [
+                                                { id: 'sogebank', name: 'Sogebank (Sogebanking)', account: '102000-482910-01', color: '#0047b3', iban: 'HT32 SOGE 0001 0200 0482 9100 12' },
+                                                { id: 'unibank', name: 'Unibank (UnibankOnline)', account: '210-1029-4829102', color: '#dc2626', iban: 'HT32 UNIB 0210 1029 4829 1020 01' },
+                                                { id: 'bnc', name: 'BNC (BNC Direct)', account: '100201-9847201', color: '#047857', iban: 'HT32 BNCH 0100 2019 8472 0100 05' },
+                                                { id: 'buh', name: 'BUH (BUH Online)', account: '301000-582910-02', color: '#d97706', iban: 'HT32 BUHH 0301 0005 8291 0020 11' },
+                                                { id: 'capital', name: 'Capital Bank', account: '402000-981203-05', color: '#7c3aed', iban: 'HT32 CAPB 0402 0009 8120 3050 09' }
+                                            ];
+                                            const currentB = banksList.find(b => b.id === selectedBank) || banksList[0];
+                                            return (
+                                                <div style={{ background: `${currentB.color}0F`, border: `1px solid ${currentB.color}40`, borderRadius: '8px', padding: '12px', marginBottom: '14px', fontSize: '0.84rem' }}>
+                                                    <div style={{ color: currentB.color, fontWeight: '700', marginBottom: '4px' }}>
+                                                        2. Compte Destinataire SIAAH ({currentB.name}) :
+                                                    </div>
+                                                    <div style={{ color: '#1e293b' }}>
+                                                        <div><strong>Compte :</strong> SIAAH - Ministère de l'Économie & Finances</div>
+                                                        <div><strong>N° de Compte :</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: '700' }}>{currentB.account}</span></div>
+                                                        <div><strong>IBAN :</strong> <span style={{ fontFamily: 'monospace' }}>{currentB.iban}</span></div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {/* 3. User Sender Account Info Inputs */}
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+                                                3. Informations de votre compte bancaire (Émetteur) :
+                                            </label>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#334155', marginBottom: '4px' }}>
+                                                        Nom du Titulaire du Compte :
+                                                    </label>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Ex: Jean Baptiste" 
+                                                        value={senderName} 
+                                                        onChange={(e) => setSenderName(e.target.value)}
+                                                        style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#334155', marginBottom: '4px' }}>
+                                                        N° de Compte Client / NIF :
+                                                    </label>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Ex: 001-98234-12" 
+                                                        value={senderAccount} 
+                                                        onChange={(e) => setSenderAccount(e.target.value)}
+                                                        style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#334155', marginBottom: '4px' }}>
+                                                        N° de Bordereau / Référence Virement :
+                                                    </label>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Ex: SOGE-98402847" 
+                                                        value={bankRefNumber} 
+                                                        onChange={(e) => setBankRefNumber(e.target.value)}
+                                                        style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#334155', marginBottom: '4px' }}>
+                                                        PIN / Code d'Autorisation Bancaire :
+                                                    </label>
+                                                    <input 
+                                                        type="password" 
+                                                        placeholder="••••" 
+                                                        maxLength={6}
+                                                        value={bankAuthPin} 
+                                                        onChange={(e) => setBankAuthPin(e.target.value)}
+                                                        style={{ width: '100%', padding: '9px 11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.88rem' }}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -1881,19 +2048,26 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                             let methodKey = 'moncash';
                                             if (paymentMethod === 'Carte Bancaire') methodKey = 'credit_card';
                                             if (paymentMethod === 'Mon Cash') methodKey = 'moncash';
-
-                                            if (paymentMethod === 'Virement') {
-                                                alert("Le virement bancaire n'est pas encore disponible en ligne. Veuillez utiliser Mon Cash ou Carte Bancaire.");
-                                                return;
-                                            }
+                                            if (paymentMethod === 'Virement') methodKey = 'virement';
 
                                             setIsRedirecting(true);
 
-                                            // Pre-open window synchronously to bypass browser popup blockers
+                                            // Pre-open window synchronously to bypass browser popup blockers (MonCash only)
                                             let paymentWindow = null;
                                             if (methodKey === 'moncash') {
                                                 paymentWindow = window.open('about:blank', '_blank');
                                             }
+
+                                            const banksList = [
+                                                { id: 'sogebank', name: 'Sogebank (Sogebanking)' },
+                                                { id: 'unibank', name: 'Unibank (UnibankOnline)' },
+                                                { id: 'bnc', name: 'BNC (BNC Direct)' },
+                                                { id: 'buh', name: 'BUH (BUH Online)' },
+                                                { id: 'capital', name: 'Capital Bank' }
+                                            ];
+                                            const currentB = banksList.find(b => b.id === selectedBank) || banksList[0];
+                                            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                                            const defaultSenderName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 'Client SIAAH';
 
                                             // Call real payment gateway initiation API
                                             const response = await fetch('/api/payments/initiate', {
@@ -1904,14 +2078,42 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                                                 },
                                                 body: JSON.stringify({
                                                     requestId: createdRequestId,
-                                                    amount: getPriceForService(selectedService) || 2500,
-                                                    method: methodKey
+                                                    amount: Number(getPriceForService(selectedService)) || 2500,
+                                                    method: methodKey,
                                                 })
                                             });
 
                                             const result = await response.json();
                                             if (response.ok && result.success) {
-                                                if (methodKey === 'moncash') {
+                                                if (methodKey === 'virement') {
+                                                    setIsRedirecting(false);
+                                                    let sTitle = (typeof selectedService === 'object' ? selectedService?.name : selectedService) || 'Demande Administrative';
+                                                    let opTitle = '';
+                                                    if (typeof selectedOperation === 'object' && selectedOperation?.name) opTitle = selectedOperation.name;
+                                                    else if (selectedOperation && operations) {
+                                                        const opObj = operations.find(o => String(o.id) === String(selectedOperation));
+                                                        if (opObj) opTitle = opObj.name;
+                                                    }
+                                                    const fullDemarcheTitle = opTitle ? `${sTitle} — ${opTitle}` : sTitle;
+                                                    const userNif = formData.nifCin || currentUser.nif || currentUser.cin || '—';
+                                                    const userPhone = formData.phone || currentUser.phone || currentUser.telephone || '—';
+                                                    const userAddress = [formData.address, formData.commune, formData.department].filter(Boolean).join(', ') || currentUser.address || currentUser.adresse || '—';
+
+                                                    setVirementSuccessInfo({
+                                                        bank: currentB.name,
+                                                        senderName: senderName || defaultSenderName,
+                                                        reference: bankRefNumber || result.details?.reference || `VIR-${Date.now().toString().slice(-8)}`,
+                                                        amount: Number(getPriceForService(selectedService)) || 2500,
+                                                        requestId: createdRequestId,
+                                                        serviceName: fullDemarcheTitle,
+                                                        paymentMethod: 'Virement',
+                                                        nif: userNif,
+                                                        phone: userPhone,
+                                                        address: userAddress,
+                                                        email: currentUser.email || formData.email || '—'
+                                                    });
+                                                    return;
+                                                } else if (methodKey === 'moncash') {
                                                     // Navigate the pre-opened window to MonCash Sandbox URL
                                                     if (paymentWindow) {
                                                         paymentWindow.location.href = result.paymentUrl;
@@ -1970,6 +2172,220 @@ const NouvelleDemande = ({ initialService = null, initialOperation = null, initi
                 </div>
             )}
             {/* Draft Success Modal */}
+            {/* Modal Popup pour Virement Bancaire */}
+            {showVirementModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                    backdropFilter: 'blur(6px)',
+                    zIndex: 99999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                }}>
+                    <div style={{
+                        background: '#ffffff',
+                        borderRadius: '16px',
+                        maxWidth: '560px',
+                        width: '100%',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        border: '1px solid #cbd5e1'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
+                            color: '#ffffff',
+                            padding: '18px 24px',
+                            borderTopLeftRadius: '15px',
+                            borderTopRightRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Building2 size={24} />
+                                <span style={{ fontWeight: '700', fontSize: '1.05rem' }}>Virement Bancaire en Ligne</span>
+                            </div>
+                            <button 
+                                onClick={() => setShowVirementModal(false)}
+                                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '1.2rem' }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div style={{ padding: '24px' }}>
+                            {/* 1. Bank Selector */}
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>
+                                    1. Choisissez la banque émettrice :
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
+                                    {[
+                                        { id: 'sogebank', name: 'Sogebank', color: '#0047b3' },
+                                        { id: 'unibank', name: 'Unibank', color: '#dc2626' },
+                                        { id: 'bnc', name: 'BNC', color: '#047857' },
+                                        { id: 'buh', name: 'BUH', color: '#d97706' },
+                                        { id: 'capital', name: 'Capital Bank', color: '#7c3aed' }
+                                    ].map((b) => (
+                                        <div
+                                            key={b.id}
+                                            onClick={() => setSelectedBank(b.id)}
+                                            style={{
+                                                padding: '10px 6px',
+                                                borderRadius: '8px',
+                                                border: `2px solid ${selectedBank === b.id ? b.color : '#e2e8f0'}`,
+                                                background: selectedBank === b.id ? `${b.color}10` : '#ffffff',
+                                                cursor: 'pointer',
+                                                textAlign: 'center',
+                                                fontSize: '0.82rem',
+                                                fontWeight: selectedBank === b.id ? '700' : '500',
+                                                color: selectedBank === b.id ? b.color : '#475569'
+                                            }}
+                                        >
+                                            {b.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 2. Target SIAAH Account */}
+                            {(() => {
+                                const banksList = [
+                                    { id: 'sogebank', name: 'Sogebank (Sogebanking)', account: '102000-482910-01', color: '#0047b3', iban: 'HT32 SOGE 0001 0200 0482 9100 12' },
+                                    { id: 'unibank', name: 'Unibank (UnibankOnline)', account: '210-1029-4829102', color: '#dc2626', iban: 'HT32 UNIB 0210 1029 4829 1020 01' },
+                                    { id: 'bnc', name: 'BNC (BNC Direct)', account: '100201-9847201', color: '#047857', iban: 'HT32 BNCH 0100 2019 8472 0100 05' },
+                                    { id: 'buh', name: 'BUH (BUH Online)', account: '301000-582910-02', color: '#d97706', iban: 'HT32 BUHH 0301 0005 8291 0020 11' },
+                                    { id: 'capital', name: 'Capital Bank', account: '402000-981203-05', color: '#7c3aed', iban: 'HT32 CAPB 0402 0009 8120 3050 09' }
+                                ];
+                                const currentB = banksList.find(b => b.id === selectedBank) || banksList[0];
+                                return (
+                                    <div style={{ background: `${currentB.color}0F`, border: `1px solid ${currentB.color}40`, borderRadius: '10px', padding: '14px', marginBottom: '18px', fontSize: '0.85rem' }}>
+                                        <div style={{ color: currentB.color, fontWeight: '700', marginBottom: '6px' }}>
+                                            📍 Compte Destinataire SIAAH ({currentB.name}) :
+                                        </div>
+                                        <div style={{ color: '#1e293b', lineHeight: '1.6' }}>
+                                            <div><strong>Bénéficiaire :</strong> SIAAH - Ministère de l'Économie & Finances</div>
+                                            <div><strong>N° de Compte :</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: '700' }}>{currentB.account}</span></div>
+                                            <div><strong>IBAN :</strong> <span style={{ fontFamily: 'monospace' }}>{currentB.iban}</span></div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
+                            {/* 3. User Sender Account Info (WITHOUT NIF) */}
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#334155', marginBottom: '10px' }}>
+                                    2. Informations de votre compte bancaire (Émetteur) :
+                                </label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#475569', marginBottom: '4px' }}>
+                                            Nom du Titulaire du Compte :
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ex: Jean Baptiste" 
+                                            value={senderName} 
+                                            onChange={(e) => setSenderName(e.target.value)}
+                                            style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#475569', marginBottom: '4px' }}>
+                                            Numéro de Compte Client :
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Ex: 102000-0982341" 
+                                            value={senderAccount} 
+                                            onChange={(e) => setSenderAccount(e.target.value)}
+                                            style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#475569', marginBottom: '4px' }}>
+                                                N° Bordereau / Réf Virement :
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Ex: SOGE-98402847" 
+                                                value={bankRefNumber} 
+                                                onChange={(e) => setBankRefNumber(e.target.value)}
+                                                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#475569', marginBottom: '4px' }}>
+                                                PIN / Code Bancaire :
+                                            </label>
+                                            <input 
+                                                type="password" 
+                                                placeholder="••••" 
+                                                maxLength={6}
+                                                value={bankAuthPin} 
+                                                onChange={(e) => setBankAuthPin(e.target.value)}
+                                                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem' }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{
+                            padding: '16px 24px',
+                            background: '#f8fafc',
+                            borderTop: '1px solid #e2e8f0',
+                            borderBottomLeftRadius: '15px',
+                            borderBottomRightRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            gap: '12px'
+                        }}>
+                            <button 
+                                onClick={() => setShowVirementModal(false)}
+                                style={{ padding: '10px 16px', background: '#e2e8f0', border: 'none', borderRadius: '8px', fontWeight: '600', color: '#475569', cursor: 'pointer' }}
+                            >
+                                Annuler
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setShowVirementModal(false);
+                                    const confirmBtn = document.querySelector('.btn-confirm-payment');
+                                    if (confirmBtn) confirmBtn.click();
+                                }}
+                                style={{ padding: '10px 20px', background: '#2563eb', border: 'none', borderRadius: '8px', fontWeight: '700', color: '#ffffff', cursor: 'pointer' }}
+                            >
+                                Enregistrer les Informations
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Confirmation / Reçu de Paiement Stripe Style */}
+            {virementSuccessInfo && (
+                <PaymentReceiptModal
+                    data={virementSuccessInfo}
+                    onClose={() => {
+                        setVirementSuccessInfo(null);
+                        window.location.href = '/user/statut';
+                    }}
+                />
+            )}
+
             {showDraftModal && (
                 <div className="payment-modal-overlay">
                     <div className="payment-modal-card animate-scale-up">

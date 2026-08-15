@@ -9,20 +9,26 @@ const getStripe = () => {
 
 exports.initiatePayment = async (req, res) => {
     const { requestId, violationId, amount, method } = req.body;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null;
 
     try {
-        const query = `
-            INSERT INTO payments (request_id, violation_id, user_id, amount, payment_method, payment_status)
-            VALUES ($1, $2, $3, $4, $5, 'pending')
-            RETURNING id
-        `;
-        const result = await pool.query(query, [requestId, violationId, userId, amount, method]);
+        const numericAmount = parseFloat(amount);
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            console.error('Invalid amount received:', amount);
+            return res.status(400).json({ success: false, message: 'Montant invalide pour le paiement' });
+        }
+        if (!method) {
+            console.error('Payment method missing');
+            return res.status(400).json({ success: false, message: 'Méthode de paiement manquante' });
+        }
+
+        const query = `INSERT INTO payments (request_id, violation_id, user_id, amount, payment_method, payment_status) VALUES ($1, $2, $3, $4, $5, 'pending') RETURNING id`;
+        const result = await pool.query(query, [requestId || null, violationId || null, userId, numericAmount, method]);
         const paymentId = result.rows[0].id;
 
         if (method === 'moncash') {
             const moncashOrderId = `${paymentId}_${Date.now()}`;
-            const moncashResponse = await MonCashService.createPayment(moncashOrderId, amount);
+            const moncashResponse = await MonCashService.createPayment(moncashOrderId, numericAmount);
             await pool.query('UPDATE payments SET transaction_id = $1 WHERE id = $2', [moncashOrderId, paymentId]);
             
             return res.json({
@@ -31,15 +37,51 @@ exports.initiatePayment = async (req, res) => {
                 paymentId: paymentId
             });
         } else if (method === 'credit_card') {
-            const session = await StripeService.createCheckoutSession(paymentId, amount, !!requestId);
+            const session = await StripeService.createCheckoutSession(paymentId, numericAmount, !!requestId);
             await pool.query('UPDATE payments SET transaction_id = $1 WHERE id = $2', [session.id, paymentId]);
 
             return res.json({
                 success: true,
                 paymentUrl: session.url
             });
+        } else if (method === 'virement' || method === 'bank_transfer') {
+            const { bank, senderName, senderAccount, reference } = req.body;
+            const bankName = bank || 'Sogebank';
+            const defaultSender = req.user ? `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim() : 'Client SIAAH';
+            const sName = senderName && senderName.trim() ? senderName.trim() : (defaultSender || 'Client SIAAH');
+            const sAccount = senderAccount && senderAccount.trim() ? senderAccount.trim() : 'Compte Client';
+            const refNumber = reference && reference.trim() ? reference.trim() : `VIR-${Date.now().toString().slice(-8)}`;
+            const txId = `VIR_${paymentId}_${Date.now()}`;
+            
+            const paymentDetails = {
+                bank: bankName,
+                senderName: sName,
+                senderAccount: sAccount,
+                reference: refNumber,
+                timestamp: new Date().toISOString(),
+                note: `Virement bancaire en ligne via ${bankName}`
+            };
+
+            await pool.query(
+                `UPDATE payments 
+                 SET payment_method = 'virement', payment_status = 'completed', transaction_id = $1, payment_details = $2::jsonb 
+                 WHERE id = $3`,
+                [txId, JSON.stringify(paymentDetails), paymentId]
+            );
+
+            if (requestId) {
+                await updatePaymentStatus(pool, paymentId, 'completed', requestId, null);
+            }
+
+            return res.json({
+                success: true,
+                message: `Virement bancaire ${bankName} enregistré avec succès !`,
+                paymentId: paymentId,
+                status: 'completed',
+                details: paymentDetails
+            });
         } else {
-            return res.status(400).json({ success: false, message: 'Invalid payment method' });
+            return res.status(400).json({ success: false, message: 'Méthode de paiement non valide' });
         }
     } catch (err) {
         console.error('InitiatePayment Error:', err);

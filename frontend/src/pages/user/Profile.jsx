@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { User, FileText, CreditCard, Clock, Bell, Calendar, MapPin } from 'lucide-react';
+import { User, FileText, CreditCard, Clock, Bell, Calendar, MapPin, Mail } from 'lucide-react';
 
 const Profile = () => {
     const { user, token } = useAuth();
     const [appointments, setAppointments] = useState([]);
+    const [communications, setCommunications] = useState([]);
 
     useEffect(() => {
         if (!token) return;
@@ -13,6 +14,13 @@ const Profile = () => {
         })
             .then(r => r.json())
             .then(d => { if (d.status === 'success') setAppointments(d.data); })
+            .catch(console.error);
+            
+        fetch('/api/notifications/comms', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+            .then(r => r.json())
+            .then(d => { if (d.status === 'success') setCommunications(d.data); })
             .catch(console.error);
     }, [token]);
 
@@ -87,6 +95,38 @@ const Profile = () => {
                             <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-20" />
                             <p>Aucun paiement effectué</p>
                         </div>
+                    </section>
+                    
+                    <section className="bg-white p-6 rounded-2xl border">
+                        <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
+                            <Mail className="h-5 w-5 text-primary-600" />
+                            <span>Historique des communications (Emails)</span>
+                        </h2>
+                        {communications.length > 0 ? (
+                            <div className="space-y-3">
+                                {communications.map((comm, i) => (
+                                    <div key={comm.id || i} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col gap-2">
+                                        <div className="flex justify-between items-start">
+                                            <p className="font-bold text-slate-900">{comm.subject}</p>
+                                            <p className="text-xs text-slate-500 font-medium whitespace-nowrap ml-2">
+                                                {new Date(comm.sent_at).toLocaleDateString('fr-FR')}
+                                            </p>
+                                        </div>
+                                        <p className="text-sm text-slate-600 line-clamp-2">{comm.message}</p>
+                                        <div className="mt-1">
+                                            <span className="px-2 py-1 bg-slate-200 text-slate-700 text-[10px] rounded uppercase font-bold">
+                                                {comm.type || 'Email'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 text-slate-400">
+                                <Mail className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                                <p>Aucune communication enregistrée</p>
+                            </div>
+                        )}
                     </section>
                 </div>
 
