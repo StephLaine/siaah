@@ -146,7 +146,7 @@ const SCHEMA = [
     office_id INT REFERENCES offices(id) ON DELETE SET NULL,
     dossier_id VARCHAR(50) UNIQUE,
     type VARCHAR(200),
-    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'rejected')),
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'validated', 'to_assign', 'to_deliver', 'completed', 'rejected', 'paused', 'in_progress', 'ready')),
     details JSONB,
     notes TEXT,
     price DECIMAL(10,2) DEFAULT 0,
@@ -336,7 +336,7 @@ const SCHEMA = [
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`,
 
-  // 24. Driving Permits (From 003_create_driving_permits.sql)
+  // 24. Driving Permits
   `CREATE TABLE IF NOT EXISTS driving_permits (
     id SERIAL PRIMARY KEY,
     permit_number VARCHAR(50) UNIQUE NOT NULL,
@@ -346,7 +346,7 @@ const SCHEMA = [
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`,
 
-  // 25. User Permits (From 004_create_user_permits.sql)
+  // 25. User Permits
   `CREATE TABLE IF NOT EXISTS user_permits (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -359,10 +359,19 @@ const SCHEMA = [
 ];
 
 async function runSetup() {
+  let client;
   try {
     console.log('🔄 Connecting to PostgreSQL database...');
-    await pool.connect();
+    client = await pool.connect();
     console.log('✅ Connected.');
+
+    if (process.env.RESET_DB === 'true' || process.argv.includes('--reset')) {
+      console.log('\n💥 Reset flag detected: Wiping database schema clean (DROP SCHEMA public CASCADE)...');
+      await client.query('DROP SCHEMA IF EXISTS public CASCADE');
+      await client.query('CREATE SCHEMA public');
+      await client.query('GRANT ALL ON SCHEMA public TO public');
+      console.log('✅ Database schema wiped clean.');
+    }
 
     // ── SCHEMA CREATION ───────────────────────────────────────────────────────
     console.log('\n🛠️  Applying database schema...');
@@ -370,8 +379,12 @@ async function runSetup() {
       const match = sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/);
       const tableName = match ? match[1] : 'unknown';
       console.log(`   - Creating table: ${tableName}`);
-      await pool.query(sql);
+      await client.query(sql);
     }
+
+    // Ensure check constraint on service_requests status is removed/unrestricted
+    await client.query('ALTER TABLE service_requests DROP CONSTRAINT IF EXISTS service_requests_status_check');
+
     console.log('✅ Schema applied successfully.');
 
     // ── SEEDING ───────────────────────────────────────────────────────────────
@@ -381,7 +394,7 @@ async function runSetup() {
     console.log('   - Seeding roles...');
     const roles = ['SuperAdmin', 'Admin', 'Employee', 'Agent Immatriculation', 'Agent Assurance', 'Agent Permis', 'Agent Routier', 'User'];
     for (const r of roles) {
-      await pool.query('INSERT INTO roles (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [r]);
+      await client.query('INSERT INTO roles (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [r]);
     }
 
     // 2. Entities
@@ -393,7 +406,7 @@ async function runSetup() {
       { name: "Direction de la Circulation et de la Police Routière", sigle: 'DCPR', type: 'Direction' }
     ];
     for (const e of entities) {
-      await pool.query(
+      await client.query(
         `INSERT INTO entities (name, sigle, type_entite, statut) 
          VALUES ($1, $2, $3, 'Actif') ON CONFLICT (name) DO NOTHING`,
         [e.name, e.sigle, e.type]
@@ -401,7 +414,7 @@ async function runSetup() {
     }
 
     // Get entity IDs map
-    const entRes = await pool.query('SELECT id, sigle FROM entities');
+    const entRes = await client.query('SELECT id, sigle FROM entities');
     const entityMap = {};
     entRes.rows.forEach(r => entityMap[r.sigle] = r.id);
 
@@ -416,7 +429,7 @@ async function runSetup() {
     ];
     for (const o of offices) {
       const entityId = entityMap[o.entity] || null;
-      await pool.query(
+      await client.query(
         `INSERT INTO offices (name, type, entity_id, statut) 
          VALUES ($1, $2, $3, 'Actif') ON CONFLICT (name) DO NOTHING`,
         [o.name, o.type, entityId]
@@ -433,7 +446,7 @@ async function runSetup() {
       { code: 'E', name: 'Catégorie E : Véhicule avec remorque', desc: 'Pour les conducteurs de véhicules des catégories B, C ou D attelés d\'une remorque lourde.' }
     ];
     for (const c of categories) {
-      await pool.query(
+      await client.query(
         `INSERT INTO license_categories (code, name, description) 
          VALUES ($1, $2, $3) ON CONFLICT (code) DO NOTHING`,
         [c.code, c.name, c.desc]
@@ -474,7 +487,7 @@ async function runSetup() {
 
     const serviceIdMap = {};
     for (const s of services) {
-      const res = await pool.query(
+      const res = await client.query(
         `INSERT INTO services (name, description, categorie, is_public, actif) 
          VALUES ($1, $2, $1, TRUE, TRUE) 
          ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description, categorie = EXCLUDED.categorie
@@ -487,7 +500,7 @@ async function runSetup() {
     for (const [svcName, ops] of Object.entries(operations)) {
       const serviceId = serviceIdMap[svcName];
       for (const op of ops) {
-        await pool.query(
+        await client.query(
           `INSERT INTO service_operations (service_id, name, description, required_documents, price, actif) 
            VALUES ($1, $2, $3, '[]'::jsonb, 0, TRUE) 
            ON CONFLICT (service_id, name) DO NOTHING`,
@@ -508,7 +521,7 @@ async function runSetup() {
       const entityId = entityMap[rel.entity];
       const serviceId = serviceIdMap[rel.service];
       if (entityId && serviceId) {
-        await pool.query(
+        await client.query(
           `INSERT INTO entity_services (entity_id, service_id) 
            VALUES ($1, $2) ON CONFLICT DO NOTHING`,
           [entityId, serviceId]
@@ -518,12 +531,16 @@ async function runSetup() {
 
     // 6. Vehicle References (Makes, Models, Colors)
     console.log('   - Seeding vehicle makes...');
-    const makes = ['Toyota', 'Honda', 'Nissan', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'BMW', 'Mercedes-Benz', 'Suzuki', 'Isuzu', 'Mitsubishi'];
+    const makes = [
+      'Toyota', 'Honda', 'Nissan', 'Ford', 'Chevrolet', 'Hyundai', 
+      'Kia', 'BMW', 'Mercedes-Benz', 'Suzuki', 'Isuzu', 'Mitsubishi', 
+      'Jeep', 'Mazda', 'Peugeot', 'Volkswagen', 'Audi', 'Land Rover'
+    ];
     for (const make of makes) {
-      await pool.query('INSERT INTO vehicle_makes (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [make]);
+      await client.query('INSERT INTO vehicle_makes (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [make]);
     }
 
-    const makeRes = await pool.query('SELECT id, name FROM vehicle_makes');
+    const makeRes = await client.query('SELECT id, name FROM vehicle_makes');
     const makeMap = {};
     makeRes.rows.forEach(r => makeMap[r.name] = r.id);
 
@@ -533,21 +550,41 @@ async function runSetup() {
       { make: 'Toyota', name: 'Hilux' },
       { make: 'Toyota', name: 'RAV4' },
       { make: 'Toyota', name: 'Corolla' },
+      { make: 'Toyota', name: 'Tacoma' },
+      { make: 'Toyota', name: 'Prado' },
+      { make: 'Toyota', name: 'Yaris' },
       { make: 'Honda', name: 'CR-V' },
       { make: 'Honda', name: 'Civic' },
+      { make: 'Honda', name: 'Accord' },
+      { make: 'Honda', name: 'HR-V' },
+      { make: 'Honda', name: 'Pilot' },
       { make: 'Nissan', name: 'Patrol' },
       { make: 'Nissan', name: 'Frontier' },
+      { make: 'Nissan', name: 'Sentra' },
+      { make: 'Nissan', name: 'X-Trail' },
       { make: 'Suzuki', name: 'Grand Vitara' },
       { make: 'Suzuki', name: 'Jimny' },
+      { make: 'Suzuki', name: 'Swift' },
       { make: 'Ford', name: 'Ranger' },
       { make: 'Ford', name: 'Everest' },
+      { make: 'Ford', name: 'Explorer' },
+      { make: 'Ford', name: 'F-150' },
       { make: 'Hyundai', name: 'Tucson' },
-      { make: 'Hyundai', name: 'Santa Fe' }
+      { make: 'Hyundai', name: 'Santa Fe' },
+      { make: 'Hyundai', name: 'Elantra' },
+      { make: 'Kia', name: 'Sportage' },
+      { make: 'Kia', name: 'Sorento' },
+      { make: 'Kia', name: 'Rio' },
+      { make: 'Jeep', name: 'Wrangler' },
+      { make: 'Jeep', name: 'Grand Cherokee' },
+      { make: 'Mitsubishi', name: 'Montero' },
+      { make: 'Mitsubishi', name: 'L200' },
+      { make: 'Mitsubishi', name: 'Outlander' }
     ];
     for (const model of models) {
       const makeId = makeMap[model.make];
       if (makeId) {
-        await pool.query(
+        await client.query(
           `INSERT INTO vehicle_models (make_id, name) 
            VALUES ($1, $2) ON CONFLICT (make_id, name) DO NOTHING`,
           [makeId, model.name]
@@ -562,12 +599,17 @@ async function runSetup() {
       { name: 'Gris Argent', hex: '#C0C0C0' },
       { name: 'Gris Anthracite', hex: '#464646' },
       { name: 'Bleu Marine', hex: '#000080' },
+      { name: 'Bleu Ciel', hex: '#87CEEB' },
       { name: 'Rouge', hex: '#FF0000' },
       { name: 'Vert Olive', hex: '#808000' },
-      { name: 'Beige', hex: '#F5F5DC' }
+      { name: 'Beige', hex: '#F5F5DC' },
+      { name: 'Jaune', hex: '#FFFF00' },
+      { name: 'Marron', hex: '#8B4513' },
+      { name: 'Or', hex: '#FFD700' },
+      { name: 'Bronze', hex: '#CD7F32' }
     ];
     for (const color of colors) {
-      await pool.query(
+      await client.query(
         `INSERT INTO vehicle_colors (name, hex_code) 
          VALUES ($1, $2) ON CONFLICT (name) DO NOTHING`,
         [color.name, color.hex]
@@ -581,24 +623,28 @@ async function runSetup() {
     const salt = await bcrypt.genSalt(10);
     const superAdminHashedPassword = await bcrypt.hash('Admin@2024!', salt);
 
-    const superAdminRoleRes = await pool.query("SELECT id FROM roles WHERE name = 'SuperAdmin' LIMIT 1");
-    const adminOfficeRes = await pool.query("SELECT id FROM offices WHERE name = 'SIAAH Headquarters' LIMIT 1");
+    const superAdminRoleRes = await client.query("SELECT id FROM roles WHERE name = 'SuperAdmin' LIMIT 1");
+    const adminOfficeRes = await client.query("SELECT id FROM offices WHERE name = 'SIAAH Headquarters' LIMIT 1");
+
+    let defaultUserId = null;
 
     if (superAdminRoleRes.rowCount > 0 && adminOfficeRes.rowCount > 0) {
       const roleId = superAdminRoleRes.rows[0].id;
       const officeId = adminOfficeRes.rows[0].id;
 
       // Seed admin@siaah.ht
-      await pool.query(
+      const uRes1 = await client.query(
         `INSERT INTO users (first_name, last_name, email, password, role_id, office_id, is_active)
          VALUES ('Super', 'Admin', 'admin@siaah.ht', $1, $2, $3, TRUE)
-         ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role_id = EXCLUDED.role_id, office_id = EXCLUDED.office_id`,
+         ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role_id = EXCLUDED.role_id, office_id = EXCLUDED.office_id
+         RETURNING id`,
         [superAdminHashedPassword, roleId, officeId]
       );
+      defaultUserId = uRes1.rows[0].id;
       console.log('      * Seeded admin@siaah.ht');
 
       // Seed superadmin@siaah.ht
-      await pool.query(
+      await client.query(
         `INSERT INTO users (first_name, last_name, email, password, role_id, office_id, is_active)
          VALUES ('Super', 'Admin', 'superadmin@siaah.ht', $1, $2, $3, TRUE)
          ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role_id = EXCLUDED.role_id, office_id = EXCLUDED.office_id`,
@@ -609,12 +655,31 @@ async function runSetup() {
       console.warn('      ⚠️  Could not seed SuperAdmin: role or office not found in DB!');
     }
 
+    // 8. Default Vehicles (Demo data)
+    if (defaultUserId) {
+      console.log('   - Seeding default vehicles...');
+      const defaultVehicles = [
+        { vin: '1HT92837461928374', plate: 'AA-12345', make: 'Toyota', model: 'Land Cruiser', year: 2022, color: 'Blanc', fuel: 'Essence', type: 'SUV' },
+        { vin: '2HT10928374610293', plate: 'BB-98765', make: 'Honda', model: 'CR-V', year: 2021, color: 'Noir', fuel: 'Essence', type: 'SUV' },
+        { vin: '3HT82910394857102', plate: 'CC-54321', make: 'Nissan', model: 'Frontier', year: 2023, color: 'Gris Argent', fuel: 'Diesel', type: 'Pickup' }
+      ];
+      for (const v of defaultVehicles) {
+        await client.query(
+          `INSERT INTO vehicles (owner_id, vin, license_plate, make, model, year, color, fuel_type, vehicle_type, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active')
+           ON CONFLICT (vin) DO NOTHING`,
+          [defaultUserId, v.vin, v.plate, v.make, v.model, v.year, v.color, v.fuel, v.type]
+        );
+      }
+    }
+
     console.log('\n🌱 Seeding successfully completed!');
     console.log('✅ Database is fully ready!');
   } catch (err) {
     console.error('\n❌ Setup/migration failed:', err);
     process.exit(1);
   } finally {
+    if (client) client.release();
     await pool.end();
   }
 }

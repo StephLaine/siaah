@@ -40,8 +40,7 @@ app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/permits', require('./routes/permit.routes'));
 
 // Unknown /api/* → proper 404 JSON (not swallowed by SPA fallback)
-// Express 5 requires named wildcards: /api/*path instead of /api/*
-app.use('/api/*path', (req, res) => {
+app.use('/api', (req, res) => {
     res.status(404).json({ status: 'error', message: `API route not found: ${req.originalUrl}` });
 });
 
@@ -52,10 +51,8 @@ const indexHtml = path.join(frontendDist, 'index.html');
 // Serve static assets (JS, CSS, images) from the built frontend
 app.use(express.static(frontendDist));
 
-// SPA catch-all: any GET that isn't a static file or API → send index.html
-// This enables client-side routing (React Router) to handle the URL
-// Express 5 requires named wildcards: '*path' instead of bare '*'
-app.get('*path', (req, res) => {
+// SPA catch-all: any GET request that is not an API route or static asset → send index.html
+app.get('{*splat}', (req, res) => {
     // Don't serve index.html for requests that look like static files
     // (e.g. .js, .css, .png, .svg, .map, .woff2, etc.)
     // Only navigation requests (no extension or .html) get the SPA fallback
