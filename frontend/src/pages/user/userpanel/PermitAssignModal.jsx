@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { X, CreditCard, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { X, CreditCard, Calendar, Clock, CheckCircle, ChevronDown } from 'lucide-react';
 import axios from 'axios';
+
+const PERMIT_TYPES = [
+  { val: 'A',  label: 'A — Motocyclettes' },
+  { val: 'B',  label: 'B — Véhicules légers' },
+  { val: 'C',  label: 'C — Poids lourds' },
+  { val: 'D',  label: 'D — Transport en commun' },
+  { val: 'E',  label: 'E — Véhicules avec remorque' },
+  { val: 'F',  label: 'F — Véhicules spéciaux' },
+  { val: 'M',  label: 'M — Cyclomoteurs' },
+];
+
+const LICENSE_CATEGORIES = [
+  { val: 'Définitif',     label: 'Définitif' },
+  { val: 'Provisoire',   label: 'Provisoire' },
+  { val: 'International', label: 'International' },
+  { val: 'Professionnel', label: 'Professionnel' },
+  { val: 'Apprentissage', label: 'Apprentissage' },
+];
 
 /**
  * PermitAssignModal
@@ -245,52 +263,72 @@ const PermitAssignModal = ({ request, token, onClose, onSuccess }) => {
                   </div>
                 </div>
 
-                {/* Permit type */}
+                {/* Permit type — select dropdown */}
                 <div style={{ marginBottom: 18 }}>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     Type de Permis
                   </label>
-                  <input
-                    type="text"
-                    value={form.permit_type}
-                    onChange={e => setForm(f => ({ ...f, permit_type: e.target.value }))}
-                    placeholder="Ex : Permis de Conduire"
-                    style={{
-                      width: '100%',
-                      padding: '11px 14px',
-                      border: '1.5px solid #e2e8f0',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: '#0f172a',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      value={form.permit_type}
+                      onChange={e => setForm(f => ({ ...f, permit_type: e.target.value }))}
+                      style={{
+                        width: '100%',
+                        padding: '11px 40px 11px 14px',
+                        border: form.permit_type ? '1.5px solid #2563eb' : '1.5px solid #e2e8f0',
+                        borderRadius: 8,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: form.permit_type ? '#1d4ed8' : '#94a3b8',
+                        background: form.permit_type ? '#eff6ff' : 'white',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        appearance: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <option value="">-- Sélectionner un type --</option>
+                      {PERMIT_TYPES.map(opt => (
+                        <option key={opt.val} value={opt.val}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#64748b', pointerEvents: 'none' }} />
+                  </div>
                 </div>
 
-                {/* License category */}
+                {/* License category — select dropdown */}
                 <div style={{ marginBottom: 18 }}>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    Catégorie de Licence
+                    Catégorie de Permis
                   </label>
-                  <input
-                    type="text"
-                    value={form.license_category}
-                    onChange={e => setForm(f => ({ ...f, license_category: e.target.value }))}
-                    placeholder="Ex : Commercial"
-                    style={{
-                      width: '100%',
-                      padding: '11px 14px',
-                      border: '1.5px solid #e2e8f0',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: '#0f172a',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      value={form.license_category}
+                      onChange={e => setForm(f => ({ ...f, license_category: e.target.value }))}
+                      style={{
+                        width: '100%',
+                        padding: '11px 40px 11px 14px',
+                        border: form.license_category ? '1.5px solid #7c3aed' : '1.5px solid #e2e8f0',
+                        borderRadius: 8,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: form.license_category ? '#7c3aed' : '#94a3b8',
+                        background: form.license_category ? '#f5f3ff' : 'white',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        appearance: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <option value="">-- Sélectionner une catégorie --</option>
+                      {LICENSE_CATEGORIES.map(opt => (
+                        <option key={opt.val} value={opt.val}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#64748b', pointerEvents: 'none' }} />
+                  </div>
                 </div>
 
               {/* Issuance date */}

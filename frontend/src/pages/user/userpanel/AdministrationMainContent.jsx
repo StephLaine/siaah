@@ -399,6 +399,8 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
 
   const handleValidate = (details) => {
     const isPaid = selectedRequest?.payment_status === 'paid';
+    const isPermis = selectedRequest?.service_name?.toLowerCase().includes('permis') ||
+                     selectedRequest?.operation?.toLowerCase().includes('permis');
     const nextStatus = isPaid ? 'to_assign' : 'validated';
 
     setConfirmModal({
@@ -406,8 +408,10 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       requestId: selectedRequest?.id,
       title: 'Confirmation de Validation',
       message: isPaid
-        ? 'Dossier payé. Voulez-vous valider et passer à l\'étape de livraison ?'
-        : 'Dossier non payé. Voulez-vous valider et passer à l\'étape de paiement ?',
+        ? (isPermis
+            ? 'Dossier payé. La demande va passer à l\'étape d\'assignement du permis. Voulez-vous confirmer ?'
+            : 'Dossier payé. La demande va passer à l\'étape d\'assignement. Voulez-vous confirmer ?')
+        : 'Dossier non payé. La demande va passer à l\'étape de paiement. Voulez-vous confirmer ?',
       details: typeof details === 'object' ? details : null,
       note: 'Dossier validé par l\'administration',
     });
@@ -453,7 +457,7 @@ const AdministrationMainContent = ({ activeTab, onTabSelect, activeSection, onSe
       details: details,
       requestId: selectedRequest?.id,
       title: 'Confirmation de Validation',
-      message: "Dossier payé. Voulez‑vous valider et passer à l'étape d'assignement ?",
+      message: "Dossier payé. La demande va passer à l'étape d'assignement du permis. Voulez-vous confirmer la validation ?",
     });
   };
 
